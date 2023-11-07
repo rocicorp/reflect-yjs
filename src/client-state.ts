@@ -5,8 +5,10 @@
 import type {WriteTransaction} from '@rocicorp/reflect';
 import {Entity, generate} from '@rocicorp/rails';
 
+// ClientState is where we store the awareness state
 export type ClientState = Entity & {
   userInfo: UserInfo;
+  yjsClientID: number;
 };
 
 export type UserInfo = {
@@ -21,6 +23,7 @@ export {
   putClientState,
   updateClientState,
   listClientStateIDs,
+  listClientStates,
   randUserInfo,
 };
 
@@ -30,6 +33,7 @@ const {
   put: putClientState,
   update: updateClientState,
   listIDs: listClientStateIDs,
+  list: listClientStates,
 } = generate<ClientState>('client-state');
 
 function initClientState(tx: WriteTransaction, userInfo: UserInfo) {
