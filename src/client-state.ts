@@ -2,13 +2,14 @@
 // cursors. It also defines some basic CRUD functions using the
 // @rocicorp/rails helper library.
 
-import type {WriteTransaction} from '@rocicorp/reflect';
-import {Entity, generate} from '@rocicorp/rails';
+import type { JSONObject, WriteTransaction } from "@rocicorp/reflect";
+import { Entity, generate } from "@rocicorp/rails";
 
 // ClientState is where we store the awareness state
 export type ClientState = Entity & {
   userInfo: UserInfo;
   yjsClientID: number;
+  yjsAwarenessState: JSONObject;
 };
 
 export type UserInfo = {
@@ -19,30 +20,64 @@ export type UserInfo = {
 
 export {
   initClientState,
-  getClientState,
-  putClientState,
-  updateClientState,
-  listClientStateIDs,
   listClientStates,
   randUserInfo,
+  updateYJSAwarenessState,
+  putYJSAwarenessState,
 };
 
 const {
   init: initImpl,
   get: getClientState,
-  put: putClientState,
   update: updateClientState,
-  listIDs: listClientStateIDs,
   list: listClientStates,
-} = generate<ClientState>('client-state');
+} = generate<ClientState>("client-state");
 
-function initClientState(tx: WriteTransaction, userInfo: UserInfo) {
-  return initImpl(tx, {
-    id: tx.clientID,
-    userInfo,
+async function updateYJSAwarenessState(
+  tx: WriteTransaction,
+  { yjsAwarenessState }: { yjsAwarenessState: JSONObject }
+) {
+  //get clientState
+  const clientState = await getClientState(tx, tx.clientID);
+  if (!clientState) {
+    throw new Error("clientState not found");
+  }
+  await updateClientState(tx, {
+    id: clientState.id,
+    yjsAwarenessState: {
+      ...clientState.yjsAwarenessState,
+      ...yjsAwarenessState,
+    },
   });
 }
 
+async function putYJSAwarenessState(
+  tx: WriteTransaction,
+  { yjsAwarenessState }: { yjsAwarenessState: JSONObject }
+) {
+  //get clientState
+  const clientState = await getClientState(tx, tx.clientID);
+  if (!clientState) {
+    throw new Error("clientState not found");
+  }
+  await updateClientState(tx, { id: clientState.id, yjsAwarenessState });
+}
+
+function initClientState(
+  tx: WriteTransaction,
+  {
+    userInfo,
+    yjsClientID,
+    yjsAwarenessState,
+  }: { userInfo: UserInfo; yjsClientID: number; yjsAwarenessState: JSONObject }
+) {
+  return initImpl(tx, {
+    id: tx.clientID,
+    userInfo,
+    yjsClientID,
+    yjsAwarenessState,
+  });
+}
 
 function randUserInfo(): UserInfo {
   const [avatar, name] = avatars[randInt(0, avatars.length - 1)];
@@ -53,13 +88,13 @@ function randUserInfo(): UserInfo {
   };
 }
 
-const colors = ['#f94144', '#f3722c', '#f8961e', '#f9844a', '#f9c74f'];
+const colors = ["#f94144", "#f3722c", "#f8961e", "#f9844a", "#f9c74f"];
 const avatars = [
-  ['🐶', 'Puppy'],
-  ['🐱', 'Kitty'],
-  ['🐭', 'Mouse'],
-  ['🐹', 'Hamster'],
-  ['🐰', 'Bunny'],
+  ["🐶", "Puppy"],
+  ["🐱", "Kitty"],
+  ["🐭", "Mouse"],
+  ["🐹", "Hamster"],
+  ["🐰", "Bunny"],
 ];
 
 function randInt(min: number, max: number) {

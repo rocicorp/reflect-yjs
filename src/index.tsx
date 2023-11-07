@@ -2,12 +2,7 @@ import { Reflect } from "@rocicorp/reflect/client";
 import { nanoid } from "nanoid";
 import React, { useEffect, useRef, useState } from "react";
 import { UserInfo, randUserInfo } from "./client-state.js";
-import {
-  UpdateYJS,
-  awarenessKeyPrefix,
-  editorKey,
-  mutators,
-} from "./mutators.js";
+import { UpdateYJS, editorKey, mutators } from "./mutators.js";
 import { UnControlled as CodeMirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
 import * as Y from "yjs";
@@ -18,6 +13,7 @@ import { render } from "react-dom";
 import { useSubscribe } from "@rocicorp/reflect/react";
 import styles from "./index.module.css";
 import "./index.css";
+import { Awareness } from "./awareness.js";
 
 const userID = nanoid();
 const roomID = "my-room";
@@ -41,87 +37,26 @@ type RepCodeMirrorProps = {
 };
 
 function ReflectCodeMirror({ userInfo, editorID }: RepCodeMirrorProps) {
-  useEffect(() => {
-    void (async () => {
-      await r.mutate.initClientState(userInfo);
-    })();
-  }, []);
-
   const ydocRef = useRef(new Y.Doc());
   const ydoc = ydocRef.current;
+  useEffect(() => {
+    void (async () => {
+      await r.mutate.initClientState({
+        userInfo,
+        yjsClientID: ydoc.clientID,
+        yjsAwarenessState: {
+          user: { color: userInfo.color, name: userInfo.name },
+        },
+      });
+    })();
+  }, [ydoc]);
   const yText = ydoc.getText("codemirror");
   const bindingRef = useRef<CodemirrorBinding | null>(null);
 
   useYJSReflect(r, editorID, yText);
 
-  const awarenessStateFromReflect = useSubscribe(
-    r,
-    async (tx) =>
-      tx
-        .scan({ prefix: awarenessKeyPrefix(editorID) })
-        .values()
-        .toArray(),
-    [],
-    [editorID]
-  );
-  const awarenessRef = useRef(new yprotocolAwareness.Awareness(ydoc));
+  const awarenessRef = useRef(new Awareness(ydoc, r));
   const awareness = awarenessRef.current;
-
-  for (const value of awarenessStateFromReflect) {
-    if (typeof value === "string" && awarenessRef.current) {
-      yprotocolAwareness.applyAwarenessUpdate(
-        awareness,
-        base64.toByteArray(value),
-        "origin"
-      );
-    }
-  }
-
-  useEffect(() => {
-    awareness.setLocalStateField("user", {
-      color: userInfo.color,
-      name: userInfo.name,
-    });
-  }, [userInfo.color, userInfo.name]);
-
-  useEffect(() => {
-    const f = async ({
-      added,
-      updated,
-      removed,
-    }: {
-      added: number[];
-      updated: number[];
-      removed: number[];
-    }) => {
-      // Remove clients that have not pinged in a while.
-      for (const removedClient of removed) {
-        await r.mutate.removeYJSAwareness({
-          name: editorID,
-          yjsClientID: removedClient,
-        });
-      }
-
-      if (
-        added.includes(awareness.clientID) ||
-        updated.includes(awareness.clientID) ||
-        removed.includes(awareness.clientID)
-      ) {
-        const update = yprotocolAwareness.encodeAwarenessUpdate(awareness, [
-          awareness.clientID,
-        ]);
-        void r.mutate
-          .updateYJSAwareness({
-            name: editorID,
-            yjsClientID: awareness.clientID,
-            update: base64.fromByteArray(update),
-          })
-          .catch((err) => console.error(err));
-      }
-    };
-    awareness.on("change", f);
-    return () => awareness.off("change", f);
-  }, [awareness]);
 
   return (
     <div className={styles.container}>
@@ -142,11 +77,7 @@ function ReflectCodeMirror({ userInfo, editorID }: RepCodeMirrorProps) {
   );
 }
 
-function useYJSReflect(
-  r: Reflect<UpdateYJS>,
-  editorID: string,
-  yText: Y.Text
-) {
+function useYJSReflect(r: Reflect<UpdateYJS>, editorID: string, yText: Y.Text) {
   const ydoc = yText.doc;
   if (!ydoc) {
     return;

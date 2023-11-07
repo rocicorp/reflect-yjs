@@ -17,13 +17,13 @@
 // precedence over the client-side optimistic result.
 
 import type { WriteTransaction } from "@rocicorp/reflect";
-import { initClientState } from "./client-state.js";
+import { initClientState, updateYJSAwarenessState, putYJSAwarenessState } from "./client-state.js";
 
 export const mutators = {
   initClientState,
+  updateYJSAwarenessState,
+  putYJSAwarenessState,
   updateYJS,
-  updateYJSAwareness,
-  removeYJSAwareness,
 };
 
 export type M = typeof mutators;
@@ -43,32 +43,8 @@ async function updateYJS(
   await tx.put(editorKey(name), update);
 }
 
-async function updateYJSAwareness(
-  tx: WriteTransaction,
-  {
-    name,
-    yjsClientID,
-    update,
-  }: { name: string; yjsClientID: number; update: string }
-) {
-  await tx.put(awarenessKey(name, yjsClientID), update);
-}
-
-async function removeYJSAwareness(
-  tx: WriteTransaction,
-  { name, yjsClientID }: { name: string; yjsClientID: number }
-) {
-  await tx.del(awarenessKey(name, yjsClientID));
-}
-
-function awarenessKey(name: string, yjsClientID: number): string {
-  return `${editorKey(name)}/awareness/${yjsClientID}`;
-}
 
 export function editorKey(name: string): string {
   return `yjs/cm/${name}`;
 }
 
-export function awarenessKeyPrefix(name: string): string {
-  return `${editorKey(name)}/awareness/`;
-}
