@@ -17,7 +17,13 @@
 // precedence over the client-side optimistic result.
 
 import type { WriteTransaction } from "@rocicorp/reflect";
-import { initClientState, updateYJSAwarenessState, putYJSAwarenessState } from "./client-state.js";
+import * as Y from "yjs";
+import * as base64 from "base64-js";
+import {
+  initClientState,
+  updateYJSAwarenessState,
+  putYJSAwarenessState,
+} from "./client-state.js";
 
 export const mutators = {
   initClientState,
@@ -35,16 +41,20 @@ export type UpdateYJS = {
   ) => Promise<void>;
 };
 
-
 async function updateYJS(
   tx: WriteTransaction,
   { name, update }: { name: string; update: string }
 ) {
-  await tx.put(editorKey(name), update);
+  const existing = await tx.get<string>(editorKey(name));
+  if (!existing) {
+    await tx.set(editorKey(name), update);
+  } else {
+    const updates = [base64.toByteArray(existing), base64.toByteArray(update)];
+    const merged = Y.mergeUpdatesV2(updates);
+    await tx.set(editorKey(name), base64.fromByteArray(merged));
+  }
 }
-
 
 export function editorKey(name: string): string {
   return `yjs/cm/${name}`;
 }
-
