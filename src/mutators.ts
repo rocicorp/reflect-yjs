@@ -16,45 +16,45 @@
 // thing. The Reflect sync protocol ensures that the server-side result takes
 // precedence over the client-side optimistic result.
 
-import type { WriteTransaction } from "@rocicorp/reflect";
-import * as Y from "yjs";
-import * as base64 from "base64-js";
-import {
-  initClientState,
-  updateYJSAwarenessState,
-  putYJSAwarenessState,
-} from "./client-state.js";
+import type {WriteTransaction} from '@rocicorp/reflect';
+import * as base64 from 'base64-js';
+import * as Y from 'yjs';
+import {yjsSetLocalState, yjsSetLocalStateField} from './client-state.js';
 
 export const mutators = {
-  initClientState,
-  updateYJSAwarenessState,
-  putYJSAwarenessState,
+  yjsSetLocalStateField,
+  yjsSetLocalState,
   updateYJS,
 };
 
 export type M = typeof mutators;
 
 export type UpdateYJS = {
-  updateYJS: (
-    tx: WriteTransaction,
-    { name, update }: { name: string; update: string }
-  ) => Promise<void>;
+  updateYJS: typeof updateYJS;
 };
 
-async function updateYJS(
+export type YJSSetLocalStateField = {
+  yjsSetLocalStateField: typeof yjsSetLocalStateField;
+};
+
+export type YJSSetLocalState = {
+  yjsSetLocalState: typeof yjsSetLocalState;
+};
+
+export async function updateYJS(
   tx: WriteTransaction,
-  { name, update }: { name: string; update: string }
+  {name, update}: {name: string; update: string},
 ) {
-  const existing = await tx.get<string>(editorKey(name));
+  const existing = await tx.get<string>(yjsProviderKey(name));
   if (!existing) {
-    await tx.set(editorKey(name), update);
+    await tx.set(yjsProviderKey(name), update);
   } else {
     const updates = [base64.toByteArray(existing), base64.toByteArray(update)];
     const merged = Y.mergeUpdatesV2(updates);
-    await tx.set(editorKey(name), base64.fromByteArray(merged));
+    await tx.set(yjsProviderKey(name), base64.fromByteArray(merged));
   }
 }
 
-export function editorKey(name: string): string {
-  return `yjs/cm/${name}`;
+export function yjsProviderKey(name: string): string {
+  return `yjs/provider/${name}`;
 }

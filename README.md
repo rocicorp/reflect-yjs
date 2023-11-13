@@ -6,7 +6,7 @@ This project will set you up with a very basic application that you can immediat
 
 ```bash
 npm install
-npx reflect dev src/reflect/index.ts
+npx reflect dev
 npm run dev
 ```
 
@@ -14,7 +14,7 @@ npm run dev
 
 ```bash
 # Publish the Reflect server
-npx reflect publish src/reflect/index.ts
+npx reflect publish
 
 # Publish the UI somewhere, i.e. Vercel
 npx vercel
