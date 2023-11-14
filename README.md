@@ -1,13 +1,17 @@
-# reflect-scaffold-example
+# reflect-yjs
 
-This project will set you up with a very basic application that you can immediately publish and see working utilizing reflect.
+The goal of this repo is to show how to use YJS with Reflect. It contains Reflect Yjs provider and an implementation of awareness.
+
+This was forked from replicache-yjs
+
+It currently has examples for codemirror-yjs and monaco-yjs for the text editors.
+
 
 ## To Run
 
 ```bash
 npm install
-npx reflect dev
-npm run dev
+npm run watch
 ```
 
 ## To Publish
