@@ -94,7 +94,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     this.states = states;
 
     if (added.length || removed.length || changed.length) {
-      this.emit("change", [{ added, updated: changed, removed }, "local"]);
+      this.emit('change', [{added, updated: changed, removed}, 'local']);
       // NOTE: with reflect we can't tell if something was set to the same value
       // because we do not propogate non changes, therefore we don't need to ever call 'update'
       // this.emit('update', [{added, updated, removed}, 'local']);

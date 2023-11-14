@@ -6,7 +6,6 @@ This was forked from replicache-yjs
 
 It currently has examples for codemirror-yjs and monaco-yjs for the text editors.
 
-
 ## To Run
 
 ```bash
