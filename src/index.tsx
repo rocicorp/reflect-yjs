@@ -38,15 +38,7 @@ function ReflectCodeMirror({userInfo, editorID}: RepCodeMirrorProps) {
 
   const provider = new Provider(r, editorID, ydoc);
   useEffect(() => {
-    // TODO(arv): I don't understand why this does not work.
-    //
-    //   provider.awareness.setLocalStateField('user', userInfo);
-    //
-    // All the code I see out there uses setLocalStateField but the code
-    // requires that there is an existing local state to set a state field.
-    //
-    // So I am using setLocalState instead.
-    provider.awareness.setLocalState({user: userInfo});
+    provider.awareness.setLocalStateField('user', userInfo);
   }, [provider.awareness, userInfo]);
 
   useEffect(() => {
