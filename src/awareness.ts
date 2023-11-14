@@ -48,8 +48,8 @@ export const awarenessMutators: AwarenessMutators = {
 export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   #reflect: Reflect<AwarenessMutators>;
 
-  #presentClientIDs: string[] = [];
-  #clients: Record<ClientID, ClientState> = {};
+  #presentClientIDs: readonly string[] = [];
+  #clients: ReadonlyMap<ClientID, ClientState> = new Map();
 
   doc: Y.Doc;
   clientID: number;
@@ -67,7 +67,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     const states: Map<number, JSONObject> = new Map();
 
     for (const presentClientID of this.#presentClientIDs) {
-      const client = this.#clients[presentClientID];
+      const client = this.#clients.get(presentClientID);
       if (client) {
         states.set(client.yjsClientID, client.yjsAwarenessState);
       }
@@ -119,10 +119,10 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     const unsubscribe = this.#reflect.subscribe(
       async tx => {
         var clientStates = await listClientStates(tx);
-        return Object.fromEntries(clientStates.map(cs => [cs.id, cs]));
+        return clientStates.map(cs => [cs.id, cs] as const);
       },
-      result => {
-        this.#clients = result;
+      entries => {
+        this.#clients = new Map(entries);
         this.#handlePresenceChange();
       },
     );
