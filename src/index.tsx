@@ -41,9 +41,7 @@ function ReflectCodeMirror({userInfo, editorID}: RepCodeMirrorProps) {
     provider.awareness.setLocalStateField('user', userInfo);
   }, [provider.awareness, userInfo]);
 
-  useEffect(() => {
-    return () => provider.destroy();
-  }, []);
+  useEffect(() => () => provider.destroy(), []);
 
   const yText = ydoc.getText('codemirror');
   const bindingRef = useRef<CodemirrorBinding | null>(null);

@@ -7,7 +7,7 @@
     "dev": "vite",
     "format": "prettier --ignore-path .gitignore --write *",
     "check-format": "prettier --ignore-path .gitignore --check *",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx ",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "watch": "concurrently --kill-others 'npx reflect dev --silence-startup-message' 'VITE_REFLECT_URL=http://127.0.0.1:8080/ npm run dev'"

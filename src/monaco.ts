@@ -1,4 +1,3 @@
-import {WriteTransaction} from '@rocicorp/reflect';
 import {Reflect} from '@rocicorp/reflect/client';
 import 'codemirror/lib/codemirror.css';
 import * as monaco from 'monaco-editor';
@@ -25,7 +24,7 @@ if (!server) {
 
 const mutators = {
   ...yjsMutators,
-  more: (tx: WriteTransaction) => 1,
+  more: () => 1,
 };
 
 const reflect = new Reflect({
@@ -43,17 +42,7 @@ const yText = yDoc.getText('monaco');
 const userInfo = randUserInfo();
 const {awareness} = provider;
 
-// TODO(arv): I don't understand why this does not work.
-//
-//   awareness.setLocalStateField('user', userInfo);
-//
-// All the code I see out there uses setLocalStateField but the code requires
-// that there is an existing local state to set a state field.
-//
-// So I am using setLocalState instead.
-awareness.setLocalState({
-  user: userInfo,
-});
+awareness.setLocalStateField('user', userInfo);
 
 const rootElement = must(document.getElementById('monaco-editor'));
 

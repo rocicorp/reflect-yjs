@@ -26,7 +26,7 @@ export async function yjsSetLocalStateField(
   tx: WriteTransaction,
   args: {yjsClientID: number; field: string; value: JSONValue},
 ) {
-  let clientState = await getClientState(tx, tx.clientID);
+  const clientState = await getClientState(tx, tx.clientID);
   if (clientState) {
     await updateClientState(tx, {
       id: clientState.id,

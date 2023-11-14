@@ -62,6 +62,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
 
   // _checkInterval this would hold a timer to remove users, but Reflects presence already handles this
   // unfortunately it's typed by various integrations
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   _checkInterval: number = 0;
 
   #handlePresenceChange() {
@@ -118,7 +119,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
 
     const unsubscribe = this.#reflect.subscribe(
       async tx => {
-        var clientStates = await listClientStates(tx);
+        const clientStates = await listClientStates(tx);
         return clientStates.map(cs => [cs.id, cs] as const);
       },
       entries => {
@@ -147,14 +148,14 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   }
 
   setLocalState(state: JSONObject | null): void {
-    this.#reflect.mutate.yjsSetLocalState({
+    void this.#reflect.mutate.yjsSetLocalState({
       yjsClientID: this.doc.clientID,
       yjsAwarenessState: state,
     });
   }
 
   setLocalStateField(field: string, value: JSONObject): void {
-    this.#reflect.mutate.yjsSetLocalStateField({
+    void this.#reflect.mutate.yjsSetLocalStateField({
       yjsClientID: this.doc.clientID,
       field,
       value,
