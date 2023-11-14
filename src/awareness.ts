@@ -94,14 +94,10 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     this.states = states;
 
     if (added.length || removed.length || changed.length) {
-      // TODO(arv): YJS Awareness checks for deep equality here. We should do the
-      // same.
-      // https://github.com/yjs/y-protocols/blob/a4dd5de756f1061eaca9c1b4ebb2013e74987a11/awareness.js#L131-L135
-      console.log("calling emit change and update");
       this.emit("change", [{ added, updated: changed, removed }, "local"]);
-      //note: with reflect we can't tell if something was set to the same value
-      // because we do not propogate non changes, there we don't need to ever call 'update'
-      //this.emit('update', [{added, updated, removed}, 'local']);
+      // NOTE: with reflect we can't tell if something was set to the same value
+      // because we do not propogate non changes, therefore we don't need to ever call 'update'
+      // this.emit('update', [{added, updated, removed}, 'local']);
     }
   }
 
