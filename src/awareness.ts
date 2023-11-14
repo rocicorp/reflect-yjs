@@ -82,7 +82,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
       const currState = states.get(yjsClientID);
       if (currState === undefined) {
         removed.push(yjsClientID);
-      } else if (currState !== state || f.equalityDeep(currState, state)) {
+      } else if (currState !== state || !f.equalityDeep(currState, state)) {
         changed.push(yjsClientID);
       }
     }
@@ -119,7 +119,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     const unsubscribe = this.#reflect.subscribe(
       async tx => {
         var clientStates = await listClientStates(tx);
-        return clientStates.map((cs) => [cs.id, cs] as const);
+        return clientStates.map(cs => [cs.id, cs] as const);
       },
       entries => {
         this.#clients = new Map(entries);
