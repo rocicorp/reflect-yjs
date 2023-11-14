@@ -4,21 +4,21 @@ import * as Y from 'yjs';
 import {Awareness, AwarenessMutators, awarenessMutators} from './awareness.js';
 import {UpdateYJS, updateYJS, yjsProviderKey} from './mutators.js';
 
-export type ProviderMutators = UpdateYJS & AwarenessMutators;
+export type Mutators = UpdateYJS & AwarenessMutators;
 
-export const providerMutators: ProviderMutators = {
+export const mutators: Mutators = {
   updateYJS,
   ...awarenessMutators,
 };
 
 export class Provider {
-  readonly #reflect: Reflect<ProviderMutators>;
+  readonly #reflect: Reflect<Mutators>;
   readonly #ydoc: Y.Doc;
   #awareness: Awareness | null = null;
   #cancelSubscribe: () => void;
   readonly name: string;
 
-  constructor(reflect: Reflect<ProviderMutators>, name: string, ydoc: Y.Doc) {
+  constructor(reflect: Reflect<Mutators>, name: string, ydoc: Y.Doc) {
     this.#reflect = reflect;
     this.name = name;
     this.#ydoc = ydoc;

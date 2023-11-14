@@ -6,16 +6,10 @@ import {UnControlled as CodeMirror} from 'react-codemirror2';
 import {render} from 'react-dom';
 import {CodemirrorBinding} from 'y-codemirror';
 import * as Y from 'yjs';
-import {
-  UserInfo,
-  randUserInfo,
-  yjsSetLocalState,
-  yjsSetLocalStateField,
-} from './client-state.js';
 import './index.css';
 import styles from './index.module.css';
-import {updateYJS} from './mutators.js';
-import {Provider} from './provider.js';
+import {Provider, mutators} from './provider.js';
+import {UserInfo, randUserInfo} from './user-info.js';
 
 const userID = nanoid();
 const roomID = `r-${Math.floor(new Date().getTime() / (1000 * 60 * 60))}`;
@@ -24,12 +18,6 @@ const server: string | undefined = import.meta.env.VITE_REFLECT_URL;
 if (!server) {
   throw new Error('VITE_REFLECT_URL required');
 }
-
-const mutators = {
-  yjsSetLocalStateField,
-  yjsSetLocalState,
-  updateYJS,
-};
 
 const r = new Reflect({
   server,

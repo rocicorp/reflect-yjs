@@ -10,9 +10,9 @@ import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 import {nanoid} from 'nanoid';
 import {MonacoBinding} from 'y-monaco';
 import * as Y from 'yjs';
-import {randUserInfo} from './client-state.js';
 import './index.css';
-import {Provider, providerMutators} from './provider.js';
+import {Provider, mutators as yjsMutators} from './provider.js';
+import {randUserInfo} from './user-info.js';
 
 const userID = nanoid();
 // const roomID = `r-${Math.floor(new Date().getTime() / 1000)}`;
@@ -24,7 +24,7 @@ if (!server) {
 }
 
 const mutators = {
-  ...providerMutators,
+  ...yjsMutators,
   more: (tx: WriteTransaction) => 1,
 };
 
@@ -36,9 +36,9 @@ const reflect = new Reflect({
   mutators,
 });
 
-const ydoc = new Y.Doc();
-const provider = new Provider(reflect, 'monaco', ydoc);
-const ytext = ydoc.getText('monaco');
+const yDoc = new Y.Doc();
+const provider = new Provider(reflect, 'monaco', yDoc);
+const yText = yDoc.getText('monaco');
 
 const userInfo = randUserInfo();
 const {awareness} = provider;
@@ -64,7 +64,7 @@ const editor = monaco.editor.create(rootElement, {
 });
 
 const binding = new MonacoBinding(
-  ytext,
+  yText,
   must(editor.getModel()),
   new Set([editor]),
   awareness,
