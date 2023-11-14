@@ -7,7 +7,7 @@ import type {JSONObject, JSONValue, WriteTransaction} from '@rocicorp/reflect';
 
 // ClientState is where we store the awareness state
 export type ClientState = Entity & {
-  // TODO(ARV): Do we need the yjsClientID here?
+  // The yjsClientID is needed to map the state back to yjs
   yjsClientID: number;
   yjsAwarenessState: JSONObject;
 };
