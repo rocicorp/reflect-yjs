@@ -1,15 +1,9 @@
 import {Reflect} from '@rocicorp/reflect/client';
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
-import {Awareness, AwarenessMutators, awarenessMutators} from './awareness.js';
-import {UpdateYJS, updateYJS, yjsProviderKey} from './mutators.js';
-
-export type Mutators = UpdateYJS & AwarenessMutators;
-
-export const mutators: Mutators = {
-  updateYJS,
-  ...awarenessMutators,
-};
+import {Awareness} from './awareness.js';
+import type {Mutators} from './mutators.js';
+import {yjsProviderKey} from './mutators.js';
 
 export class Provider {
   readonly #reflect: Reflect<Mutators>;

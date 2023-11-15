@@ -1,15 +1,18 @@
-import {ClientID, JSONObject} from '@rocicorp/reflect';
+import {
+  ClientID,
+  ReadonlyJSONObject,
+  ReadonlyJSONValue,
+} from '@rocicorp/reflect';
 import {Reflect} from '@rocicorp/reflect/client';
 import {equalityDeep} from 'lib0/function';
 import {ObservableV2} from 'lib0/observable';
 import type {Awareness as YJSAwareness} from 'y-protocols/awareness.js';
 import type * as Y from 'yjs';
 import {
-  ClientState,
   listClientStates,
   yjsSetLocalState,
   yjsSetLocalStateField,
-} from './client-state';
+} from './mutators.js';
 
 type MetaClientState = {
   clock: number;
@@ -36,14 +39,9 @@ type Events = {
   ) => unknown;
 };
 
-export type AwarenessMutators = {
+type AwarenessMutators = {
   yjsSetLocalState: typeof yjsSetLocalState;
   yjsSetLocalStateField: typeof yjsSetLocalStateField;
-};
-
-export const awarenessMutators: AwarenessMutators = {
-  yjsSetLocalState,
-  yjsSetLocalStateField,
 };
 
 export class Awareness extends ObservableV2<Events> implements YJSAwareness {
@@ -56,9 +54,9 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   /**
    * Mapping from Reflect clientID to YJS clientID to state.
    */
-  #clients: ReadonlyMap<ClientID, [number, ClientState][]> = new Map();
+  #clients: ReadonlyMap<ClientID, [number, ReadonlyJSONObject][]> = new Map();
 
-  states: Map<number, JSONObject> = new Map();
+  states: Map<number, ReadonlyJSONObject> = new Map();
 
   // Meta is used to keep track and timeout users who disconnect. Reflect provides this for us, so we don't need to
   // manage it here. Unfortunately, it's expected to exist by various integrations, so it's an empty map.
@@ -70,7 +68,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   _checkInterval: number = 0;
 
   #handlePresenceChange() {
-    const states: Map<number, JSONObject> = new Map();
+    const states: Map<number, ReadonlyJSONObject> = new Map();
 
     for (const presentClientID of this.#presentClientIDs) {
       const clients = this.#clients.get(presentClientID);
@@ -126,13 +124,14 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     const unsubscribe = this.#reflect.subscribe(
       tx => listClientStates(tx, this.#name),
       entries => {
-        const clients = new Map<ClientID, [number, ClientState][]>();
+        const clients = new Map<ClientID, [number, ReadonlyJSONObject][]>();
         for (const [reflectClientID, yjsClientID, state] of entries) {
           const client = clients.get(reflectClientID);
+          const value: [number, ReadonlyJSONObject] = [yjsClientID, state];
           if (client) {
-            client.push([yjsClientID, state]);
+            client.push(value);
           } else {
-            clients.set(reflectClientID, [[yjsClientID, state]]);
+            clients.set(reflectClientID, [value]);
           }
         }
         this.#clients = clients;
@@ -159,28 +158,28 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     super.destroy();
   }
 
-  getLocalState(): JSONObject | null {
-    return this.states.get(this.clientID) ?? null;
+  getLocalState(): ReadonlyJSONObject | null {
+    return this.states.get(this.doc.clientID) ?? null;
   }
 
-  setLocalState(state: JSONObject | null): void {
+  setLocalState(state: ReadonlyJSONObject | null): void {
     void this.#reflect.mutate.yjsSetLocalState({
       name: this.#name,
-      yjsClientID: this.clientID,
+      yjsClientID: this.doc.clientID,
       yjsAwarenessState: state,
     });
   }
 
-  setLocalStateField(field: string, value: JSONObject): void {
+  setLocalStateField(field: string, value: ReadonlyJSONValue): void {
     void this.#reflect.mutate.yjsSetLocalStateField({
       name: this.#name,
-      yjsClientID: this.clientID,
+      yjsClientID: this.doc.clientID,
       field,
       value,
     });
   }
 
-  getStates(): Map<number, JSONObject> {
+  getStates(): Map<number, ReadonlyJSONObject> {
     return this.states;
   }
 }
