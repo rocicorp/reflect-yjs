@@ -37,7 +37,9 @@
 }
 
 .CodeMirror {
-  height: 100vh !important;
+  height: 40vh;
+  margin: 20px;
+  border: 1px solid #ddd
 }
 
 .CodeMirror-sizer {

@@ -2,38 +2,33 @@
 // cursors. It also defines some basic CRUD functions using the
 // @rocicorp/rails helper library.
 
-import {Entity, generate} from '@rocicorp/rails';
-import type {JSONObject, JSONValue, WriteTransaction} from '@rocicorp/reflect';
+import type {
+  ClientID,
+  JSONObject,
+  JSONValue,
+  ReadTransaction,
+  ReadonlyJSONObject,
+  WriteTransaction,
+} from '@rocicorp/reflect';
+import {yjsAwarenessKey, yjsAwarenessPrefix} from './mutators.js';
 
 // ClientState is where we store the awareness state
-export type ClientState = Entity & {
-  // The yjsClientID is needed to map the state back to yjs
-  yjsClientID: number;
-  yjsAwarenessState: JSONObject;
-};
-
-const {
-  get: getClientState,
-  delete: deleteClientState,
-  put: putClientState,
-  update: updateClientState,
-  list: listClientStates,
-} = generate<ClientState>('client-state');
-
-export {listClientStates};
+export type ClientState = JSONObject;
 
 export async function yjsSetLocalStateField(
   tx: WriteTransaction,
-  args: {yjsClientID: number; field: string; value: JSONValue},
+  {
+    name,
+    yjsClientID,
+    field,
+    value,
+  }: {name: string; yjsClientID: number; field: string; value: JSONValue},
 ) {
-  const clientState = await getClientState(tx, tx.clientID);
+  const clientState = await getClientState(tx, name, tx.clientID, yjsClientID);
   if (clientState) {
-    await updateClientState(tx, {
-      id: clientState.id,
-      yjsAwarenessState: {
-        ...clientState.yjsAwarenessState,
-        [args.field]: args.value,
-      },
+    await putClientState(tx, name, tx.clientID, yjsClientID, {
+      ...(clientState as object),
+      [field]: value,
     });
   }
 }
@@ -41,13 +36,62 @@ export async function yjsSetLocalStateField(
 export async function yjsSetLocalState(
   tx: WriteTransaction,
   {
+    name,
     yjsClientID,
     yjsAwarenessState,
-  }: {yjsClientID: number; yjsAwarenessState: JSONObject | null},
+  }: {
+    name: string;
+    yjsClientID: number;
+    yjsAwarenessState: ReadonlyJSONObject | null;
+  },
 ) {
   if (yjsAwarenessState === null) {
-    await deleteClientState(tx, tx.clientID);
+    await deleteClientState(tx, name, tx.clientID, yjsClientID);
   } else {
-    await putClientState(tx, {id: tx.clientID, yjsClientID, yjsAwarenessState});
+    await putClientState(tx, name, tx.clientID, yjsClientID, yjsAwarenessState);
   }
+}
+
+function deleteClientState(
+  tx: WriteTransaction,
+  name: string,
+  reflectClientID: ClientID,
+  yjsClientID: number,
+) {
+  return tx.del(yjsAwarenessKey(name, reflectClientID, yjsClientID));
+}
+
+function putClientState(
+  tx: WriteTransaction,
+  name: string,
+  reflectClientID: string,
+  yjsClientID: number,
+  yjsAwarenessState: ReadonlyJSONObject | null,
+) {
+  return tx.set(
+    yjsAwarenessKey(name, reflectClientID, yjsClientID),
+    yjsAwarenessState,
+  );
+}
+
+function getClientState(
+  tx: WriteTransaction,
+  name: string,
+  reflectClientID: string,
+  yjsClientID: number,
+) {
+  return tx.get(yjsAwarenessKey(name, reflectClientID, yjsClientID));
+}
+
+export async function listClientStates(
+  tx: ReadTransaction,
+  name: string,
+): Promise<[ClientID, number, JSONObject][]> {
+  const entries: [ClientID, number, JSONObject][] = [];
+  const prefix = yjsAwarenessPrefix(name);
+  for await (const [key, value] of tx.scan({prefix}).entries()) {
+    const [reflectClientID, yjsClientID] = key.slice(prefix.length).split('/');
+    entries.push([reflectClientID, Number(yjsClientID), value as JSONObject]);
+  }
+  return entries;
 }

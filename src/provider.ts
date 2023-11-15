@@ -42,7 +42,7 @@ export class Provider {
 
   get awareness(): Awareness {
     if (this.#awareness === null) {
-      this.#awareness = new Awareness(this.#ydoc, this.#reflect);
+      this.#awareness = new Awareness(this.#reflect, this.name, this.#ydoc);
     }
     return this.#awareness;
   }

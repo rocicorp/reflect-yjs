@@ -8,7 +8,7 @@ import {CodemirrorBinding} from 'y-codemirror';
 import * as Y from 'yjs';
 import './index.css';
 import styles from './index.module.css';
-import {Provider, mutators} from './provider.js';
+import {Mutators, Provider, mutators} from './provider.js';
 import {UserInfo, randUserInfo} from './user-info.js';
 
 const userID = nanoid();
@@ -19,7 +19,7 @@ if (!server) {
   throw new Error('VITE_REFLECT_URL required');
 }
 
-const r = new Reflect({
+const reflect = new Reflect({
   server,
   userID,
   roomID,
@@ -27,16 +27,17 @@ const r = new Reflect({
   mutators,
 });
 
-type RepCodeMirrorProps = {
-  editorID: string;
+type ReflectCodeMirrorProps = {
+  reflect: Reflect<Mutators>;
+  name: string;
   userInfo: UserInfo;
 };
 
-function ReflectCodeMirror({userInfo, editorID}: RepCodeMirrorProps) {
+function ReflectCodeMirror({reflect, name, userInfo}: ReflectCodeMirrorProps) {
   const ydocRef = useRef(new Y.Doc());
   const ydoc = ydocRef.current;
 
-  const provider = new Provider(r, editorID, ydoc);
+  const provider = new Provider(reflect, name, ydoc);
   useEffect(() => {
     provider.awareness.setLocalStateField('user', userInfo);
   }, [provider.awareness, userInfo]);
@@ -47,28 +48,22 @@ function ReflectCodeMirror({userInfo, editorID}: RepCodeMirrorProps) {
   const bindingRef = useRef<CodemirrorBinding | null>(null);
 
   return (
-    <div className={styles.container}>
-      <h1>Reflect + yjs</h1>
-      <h3>
-        <a href="https://hello.reflect.net">hello.reflect.net</a>
-      </h3>
-      <CodeMirror
-        editorDidMount={editor => {
-          const binding = new CodemirrorBinding(
-            yText,
-            editor,
-            provider.awareness,
-          );
-          bindingRef.current = binding;
-        }}
-        options={{
-          theme: 'material',
-          lineNumbers: true,
-          showCursorWhenSelecting: true,
-          autoCursor: true,
-        }}
-      />
-    </div>
+    <CodeMirror
+      editorDidMount={editor => {
+        const binding = new CodemirrorBinding(
+          yText,
+          editor,
+          provider.awareness,
+        );
+        bindingRef.current = binding;
+      }}
+      options={{
+        theme: 'material',
+        lineNumbers: true,
+        showCursorWhenSelecting: true,
+        autoCursor: true,
+      }}
+    />
   );
 }
 
@@ -81,7 +76,14 @@ const userInfo = randUserInfo();
 
 render(
   <React.StrictMode>
-    <ReflectCodeMirror userInfo={userInfo} editorID="one" />
+    <div className={styles.container}>
+      <h1>Reflect + yjs</h1>
+      <h3>
+        <a href="https://hello.reflect.net">hello.reflect.net</a>
+      </h3>
+      <ReflectCodeMirror userInfo={userInfo} name="one" reflect={reflect} />
+      <ReflectCodeMirror userInfo={userInfo} name="two" reflect={reflect} />
+    </div>
   </React.StrictMode>,
   rootElement,
 );
@@ -89,7 +91,6 @@ render(
 if (import.meta.hot) {
   import.meta.hot.dispose(async () => {
     // this makes sure that there is only one instance of the reflect client during hmr reloads
-    await r.close();
-    rootElement.textContent = '';
+    await reflect.close();
   });
 }

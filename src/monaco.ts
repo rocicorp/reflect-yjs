@@ -14,8 +14,7 @@ import {Provider, mutators as yjsMutators} from './provider.js';
 import {randUserInfo} from './user-info.js';
 
 const userID = nanoid();
-// const roomID = `r-${Math.floor(new Date().getTime() / 1000)}`;
-const roomID = 'r-5';
+const roomID = `r-${Math.floor(new Date().getTime() / 1000)}`;
 
 const server: string | undefined = import.meta.env.VITE_REFLECT_URL;
 if (!server) {

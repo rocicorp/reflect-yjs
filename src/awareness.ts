@@ -1,9 +1,9 @@
 import {ClientID, JSONObject} from '@rocicorp/reflect';
 import {Reflect} from '@rocicorp/reflect/client';
+import {equalityDeep} from 'lib0/function';
 import {ObservableV2} from 'lib0/observable';
 import type {Awareness as YJSAwareness} from 'y-protocols/awareness.js';
 import type * as Y from 'yjs';
-import * as f from 'lib0/function';
 import {
   ClientState,
   listClientStates,
@@ -48,12 +48,16 @@ export const awarenessMutators: AwarenessMutators = {
 
 export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   #reflect: Reflect<AwarenessMutators>;
+  readonly #name: string;
+  doc: Y.Doc;
 
   #presentClientIDs: readonly string[] = [];
-  #clients: ReadonlyMap<ClientID, ClientState> = new Map();
 
-  doc: Y.Doc;
-  clientID: number;
+  /**
+   * Mapping from Reflect clientID to YJS clientID to state.
+   */
+  #clients: ReadonlyMap<ClientID, [number, ClientState][]> = new Map();
+
   states: Map<number, JSONObject> = new Map();
 
   // Meta is used to keep track and timeout users who disconnect. Reflect provides this for us, so we don't need to
@@ -69,9 +73,11 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     const states: Map<number, JSONObject> = new Map();
 
     for (const presentClientID of this.#presentClientIDs) {
-      const client = this.#clients.get(presentClientID);
-      if (client) {
-        states.set(client.yjsClientID, client.yjsAwarenessState);
+      const clients = this.#clients.get(presentClientID);
+      if (clients) {
+        for (const [yjsClientID, state] of clients) {
+          states.set(yjsClientID, state);
+        }
       }
     }
 
@@ -83,7 +89,7 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
       const currState = states.get(yjsClientID);
       if (currState === undefined) {
         removed.push(yjsClientID);
-      } else if (currState !== state || !f.equalityDeep(currState, state)) {
+      } else if (currState !== state && !equalityDeep(currState, state)) {
         changed.push(yjsClientID);
       }
     }
@@ -97,18 +103,18 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     if (added.length || removed.length || changed.length) {
       this.emit('change', [{added, updated: changed, removed}, 'local']);
       // NOTE: with reflect we can't tell if something was set to the same value
-      // because we do not propogate non changes, therefore we don't need to ever call 'update'
+      // because we do not propagate non changes, therefore we don't need to ever call 'update'
       // this.emit('update', [{added, updated, removed}, 'local']);
     }
   }
 
   readonly #unsubscribe: () => void;
 
-  constructor(doc: Y.Doc, reflect: Reflect<AwarenessMutators>) {
+  constructor(reflect: Reflect<AwarenessMutators>, name: string, doc: Y.Doc) {
     super();
-    this.doc = doc;
     this.#reflect = reflect;
-    this.clientID = doc.clientID;
+    this.#name = name;
+    this.doc = doc;
 
     const unsubscribeToPresence = this.#reflect.subscribeToPresence(
       clientIDs => {
@@ -118,12 +124,18 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     );
 
     const unsubscribe = this.#reflect.subscribe(
-      async tx => {
-        const clientStates = await listClientStates(tx);
-        return clientStates.map(cs => [cs.id, cs] as const);
-      },
+      tx => listClientStates(tx, this.#name),
       entries => {
-        this.#clients = new Map(entries);
+        const clients = new Map<ClientID, [number, ClientState][]>();
+        for (const [reflectClientID, yjsClientID, state] of entries) {
+          const client = clients.get(reflectClientID);
+          if (client) {
+            client.push([yjsClientID, state]);
+          } else {
+            clients.set(reflectClientID, [[yjsClientID, state]]);
+          }
+        }
+        this.#clients = clients;
         this.#handlePresenceChange();
       },
     );
@@ -136,6 +148,10 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     this.setLocalState({});
   }
 
+  get clientID() {
+    return this.doc.clientID;
+  }
+
   destroy(): void {
     this.emit('destroy', [this]);
     this.setLocalState(null);
@@ -144,19 +160,21 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   }
 
   getLocalState(): JSONObject | null {
-    return this.states.get(this.doc.clientID) ?? null;
+    return this.states.get(this.clientID) ?? null;
   }
 
   setLocalState(state: JSONObject | null): void {
     void this.#reflect.mutate.yjsSetLocalState({
-      yjsClientID: this.doc.clientID,
+      name: this.#name,
+      yjsClientID: this.clientID,
       yjsAwarenessState: state,
     });
   }
 
   setLocalStateField(field: string, value: JSONObject): void {
     void this.#reflect.mutate.yjsSetLocalStateField({
-      yjsClientID: this.doc.clientID,
+      name: this.#name,
+      yjsClientID: this.clientID,
       field,
       value,
     });

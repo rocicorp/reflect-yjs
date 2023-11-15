@@ -16,7 +16,7 @@
 // thing. The Reflect sync protocol ensures that the server-side result takes
 // precedence over the client-side optimistic result.
 
-import type {WriteTransaction} from '@rocicorp/reflect';
+import type {ClientID, WriteTransaction} from '@rocicorp/reflect';
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {yjsSetLocalState, yjsSetLocalStateField} from './client-state.js';
@@ -55,6 +55,18 @@ export async function updateYJS(
   }
 }
 
+export function yjsAwarenessPrefix(name: string) {
+  return `yjs/awareness/${name}/`;
+}
+
 export function yjsProviderKey(name: string): string {
   return `yjs/provider/${name}`;
+}
+
+export function yjsAwarenessKey(
+  name: string,
+  reflectClientID: ClientID,
+  yjsClientID: number,
+): string {
+  return `${yjsAwarenessPrefix(name)}${reflectClientID}/${yjsClientID}`;
 }

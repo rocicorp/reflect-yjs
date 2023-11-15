@@ -23,7 +23,6 @@
     "yjs": "^13.5.38"
   },
   "devDependencies": {
-    "@rocicorp/rails": "^0.7.0",
     "@rocicorp/reflect": "^0.37.202311060940",
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
