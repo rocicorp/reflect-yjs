@@ -1,5 +1,5 @@
 import type {AuthHandler, ReflectServerOptions} from '@rocicorp/reflect/server';
-import {Mutators, mutators} from '../mutators.js';
+import {mutators as yjsMutators, Mutators} from '@rocicorp/reflect-yjs';
 
 const authHandler: AuthHandler = (auth: string, _roomID: string) => {
   if (auth) {
@@ -19,7 +19,7 @@ const authHandler: AuthHandler = (auth: string, _roomID: string) => {
 
 function makeOptions(): ReflectServerOptions<Mutators> {
   return {
-    mutators,
+    mutators: yjsMutators,
     authHandler,
     logLevel: 'debug',
   };

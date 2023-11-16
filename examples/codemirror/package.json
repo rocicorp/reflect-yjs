@@ -1,0 +1,45 @@
+{
+  "name": "reflect-yjs-codemirror",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "format": "prettier --ignore-path .gitignore --write *",
+    "check-types": "tsc --noEmit",
+    "check-format": "prettier --ignore-path .gitignore --check *",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "watch": "concurrently --kill-others 'npx reflect dev --silence-startup-message' 'VITE_REFLECT_URL=http://127.0.0.1:8080/ npm run dev'"
+  },
+  "dependencies": {
+    "@codemirror/lang-javascript": "^6.0.0",
+    "@rocicorp/reflect-yjs": "0.1.0",
+    "base64-js": "^1.5.1",
+    "monaco-editor": "^0.44.0",
+    "react-codemirror2": "^7.3.0",
+    "y-codemirror": "^3.0.1",
+    "y-monaco": "^0.1.5",
+    "y-protocols": "^1.0.5",
+    "yjs": "^13.5.38"
+  },
+  "devDependencies": {
+    "@rocicorp/eslint-config": "^0.5.1",
+    "@rocicorp/prettier-config": "^0.2.0",
+    "@rocicorp/reflect": "^0.37.202311060940",
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.2",
+    "@vitejs/plugin-react": "^2.0.1",
+    "concurrently": "^8.2.1",
+    "nanoid": "^4.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "^4.7.4",
+    "vite": "^3.0.7"
+  },
+  "eslintConfig": {
+    "extends": "@rocicorp/eslint-config"
+  },
+  "prettier": "@rocicorp/prettier-config"
+}

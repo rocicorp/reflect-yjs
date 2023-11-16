@@ -1,9 +1,9 @@
-import {
+import type {
   ClientID,
   ReadonlyJSONObject,
   ReadonlyJSONValue,
 } from '@rocicorp/reflect';
-import {Reflect} from '@rocicorp/reflect/client';
+import type {Reflect} from '@rocicorp/reflect/client';
 import {equalityDeep} from 'lib0/function';
 import {ObservableV2} from 'lib0/observable';
 import type {Awareness as YJSAwareness} from 'y-protocols/awareness.js';

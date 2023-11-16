@@ -10,8 +10,7 @@ import {nanoid} from 'nanoid';
 import {MonacoBinding} from 'y-monaco';
 import * as Y from 'yjs';
 import './index.css';
-import {mutators as yjsMutators} from './mutators.js';
-import {Provider} from './provider.js';
+import {Provider, mutators as yjsMutators} from '@rocicorp/reflect-yjs';
 import {randUserInfo} from './user-info.js';
 
 const userID = nanoid();

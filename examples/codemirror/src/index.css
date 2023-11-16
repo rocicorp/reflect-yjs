@@ -39,7 +39,7 @@
 .CodeMirror {
   height: 40vh;
   margin: 20px;
-  border: 1px solid #ddd
+  border: 1px solid #ddd;
 }
 
 .CodeMirror-sizer {

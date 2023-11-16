@@ -1,4 +1,4 @@
-import {Reflect} from '@rocicorp/reflect/client';
+import type {Reflect} from '@rocicorp/reflect/client';
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {Awareness} from './awareness.js';

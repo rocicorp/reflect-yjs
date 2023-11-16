@@ -1,0 +1,52 @@
+{
+  "name": "@rocicorp/reflect-yjs",
+  "description": "",
+  "version": "0.1.0",
+  "license": "SEE LICENSE IN https://roci.dev/terms.html",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup &&  tsc --emitDeclarationOnly --outDir dist && cp dist/index.d.ts dist/index.d.mts",
+    "format": "prettier --write *",
+    "check-format": "prettier --check *",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx tool/",
+    "prepack": "npx turbo build"
+  },
+  "devDependencies": {
+    "@rocicorp/eslint-config": "^0.5.1",
+    "@rocicorp/prettier-config": "^0.2.0",
+    "@rocicorp/reflect": "^0.37.202311060940",
+    "base64-js": "^1.5.1",
+    "esbuild": "^0.19.4",
+    "tsup": "^7.2.0",
+    "y-protocols": "^1.0.5",
+    "yjs": "^13.5.38"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "eslintConfig": {
+    "extends": "@rocicorp/eslint-config"
+  },
+  "prettier": "@rocicorp/prettier-config",
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "splitting": true,
+    "sourcemap": true,
+    "clean": true,
+    "format": [
+      "cjs",
+      "esm"
+    ]
+  }
+}
