@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "format": "prettier --ignore-path .gitignore --write *",
+    "format": "prettier --write *",
     "check-types": "tsc --noEmit",
-    "check-format": "prettier --ignore-path .gitignore --check *",
+    "check-format": "prettier --check *",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
     "build": "tsc && vite build",
     "preview": "vite preview",
