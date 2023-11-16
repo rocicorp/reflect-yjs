@@ -1,5 +1,6 @@
 import * as esbuild from 'esbuild';
 import packageJSON from '../package.json' assert {type: 'json'};
+import process from 'node:process';
 
 const {dependencies, devDependencies} = packageJSON;
 const external = new Set(
@@ -24,5 +25,5 @@ if (process.argv.includes('--watch')) {
   await indexCtx.watch();
 } else {
   await indexCtx.rebuild();
-  indexCtx.dispose();
+  void indexCtx.dispose();
 }

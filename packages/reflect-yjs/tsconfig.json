@@ -3,5 +3,5 @@
   "compilerOptions": {
     "lib": ["dom", "es2022"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "tool/**/*.js"]
 }
