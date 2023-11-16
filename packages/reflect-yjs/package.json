@@ -13,7 +13,7 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup && tsc --emitDeclarationOnly --outDir dist && cp dist/index.d.ts dist/index.d.mts",
+    "build": "node --no-warnings tool/build.js && tsc --emitDeclarationOnly --outDir dist",
     "format": "prettier --write *",
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
@@ -26,7 +26,6 @@
     "@rocicorp/reflect": "^0.37.202311060940",
     "base64-js": "^1.5.1",
     "esbuild": "^0.19.4",
-    "tsup": "^7.2.0",
     "y-protocols": "^1.0.5",
     "yjs": "^13.5.38"
   },
@@ -36,17 +35,5 @@
   "eslintConfig": {
     "extends": "@rocicorp/eslint-config"
   },
-  "prettier": "@rocicorp/prettier-config",
-  "tsup": {
-    "entry": [
-      "src/index.ts"
-    ],
-    "splitting": true,
-    "sourcemap": true,
-    "clean": true,
-    "format": [
-      "cjs",
-      "esm"
-    ]
-  }
+  "prettier": "@rocicorp/prettier-config"
 }
