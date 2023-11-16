@@ -13,14 +13,14 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup &&  tsc --emitDeclarationOnly --outDir dist && cp dist/index.d.ts dist/index.d.mts",
+    "build": "tsup && tsc --emitDeclarationOnly --outDir dist && cp dist/index.d.ts dist/index.d.mts",
     "format": "prettier --write *",
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx tool/",
     "prepack": "npx turbo build"
   },
-  "devDependencies": {
+  "dependencies": {
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
     "@rocicorp/reflect": "^0.37.202311060940",
