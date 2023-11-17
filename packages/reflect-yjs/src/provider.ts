@@ -44,10 +44,10 @@ export class Provider {
         const v = await tx.get(yjsProviderServerKey(this.name));
         return typeof v === 'string' ? v : null;
       },
-      docStateFromReflect => {
-        if (docStateFromReflect !== null) {
+      docStateFromServer => {
+        if (docStateFromServer !== null) {
           this.#vector = Y.encodeStateVectorFromUpdateV2(
-            base64.toByteArray(docStateFromReflect),
+            base64.toByteArray(docStateFromServer),
           );
         }
       },
@@ -62,7 +62,6 @@ export class Provider {
   }
 
   #handleUpdate = async () => {
-    // We could/should use the update passed into the on('update') but encoding the whole state is easier for now.
     const diffUpdate = this.#vector
       ? Y.encodeStateAsUpdateV2(this.#ydoc, this.#vector)
       : Y.encodeStateAsUpdateV2(this.#ydoc);
