@@ -1,5 +1,4 @@
 import {Reflect} from '@rocicorp/reflect/client';
-import 'codemirror/lib/codemirror.css';
 import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
@@ -14,7 +13,7 @@ import {Provider, mutators as yjsMutators} from '@rocicorp/reflect-yjs';
 import {randUserInfo} from './user-info.js';
 
 const userID = nanoid();
-const roomID = `r-${Math.floor(new Date().getTime() / 1000)}`;
+const roomID = `r-${Math.floor(new Date().getTime() / (1000 * 60 * 60))}`;
 
 const server: string | undefined = import.meta.env.VITE_REFLECT_URL;
 if (!server) {

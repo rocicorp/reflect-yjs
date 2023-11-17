@@ -7,7 +7,7 @@
   },
   "include": [
     "**/*.ts",
-    "../user-info.ts",
+    "../user-info.ts"
   ],
   "extends": "../../tsconfig.json"
 }

@@ -2,7 +2,7 @@
   "name": "@rocicorp/reflect-yjs",
   "description": "",
   "version": "0.1.0",
-  "license": "SEE LICENSE IN https://roci.dev/terms.html",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,17 +17,19 @@
     "format": "prettier --write *",
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx tool/",
-    "prepack": "npx turbo build"
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx tool/ src/",
+    "prepack": "npm run build"
   },
   "dependencies": {
-    "@rocicorp/eslint-config": "^0.5.1",
-    "@rocicorp/prettier-config": "^0.2.0",
     "@rocicorp/reflect": "^0.37.202311060940",
     "base64-js": "^1.5.1",
-    "esbuild": "^0.19.4",
     "y-protocols": "^1.0.5",
     "yjs": "^13.5.38"
+  },
+  "devDependencies": {
+    "@rocicorp/eslint-config": "^0.5.1",
+    "@rocicorp/prettier-config": "^0.2.0",
+    "esbuild": "^0.19.4"
   },
   "engines": {
     "node": ">=18"

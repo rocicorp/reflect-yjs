@@ -82,6 +82,7 @@ render(
   <React.StrictMode>
     <div className={styles.container}>
       <h1>Reflect + yjs</h1>
+      <h2>Code Mirror</h2>
       <h3>
         <a href="https://hello.reflect.net">hello.reflect.net</a>
       </h3>
