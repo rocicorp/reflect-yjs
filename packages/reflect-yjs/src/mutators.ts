@@ -38,27 +38,15 @@ export async function updateYJS(
   tx: WriteTransaction,
   {name, update}: {name: string; update: string},
 ) {
-  const existing = await tx.get<string>(yjsProviderUpdateKey(name));
+  const existing = await tx.get<string>(yjsProviderServerKey(name));
+  const getKeyToSet =
+    tx.location === 'client' ? yjsProviderClientKey : yjsProviderServerKey;
   if (!existing) {
-    await tx.set(yjsProviderUpdateKey(name), update);
-    if (tx.location === 'server') {
-      await tx.set(
-        yjsProviderVectorKey(name),
-        base64.fromByteArray(
-          Y.encodeStateVectorFromUpdateV2(base64.toByteArray(update)),
-        ),
-      );
-    }
+    await tx.set(getKeyToSet(name), update);
   } else {
     const updates = [base64.toByteArray(existing), base64.toByteArray(update)];
     const merged = Y.mergeUpdatesV2(updates);
-    await tx.set(yjsProviderUpdateKey(name), base64.fromByteArray(merged));
-    if (tx.location === 'server') {
-      await tx.set(
-        yjsProviderVectorKey(name),
-        base64.fromByteArray(Y.encodeStateVectorFromUpdateV2(merged)),
-      );
-    }
+    await tx.set(getKeyToSet(name), base64.fromByteArray(merged));
   }
 }
 
@@ -66,12 +54,12 @@ function yjsAwarenessPrefix(name: string) {
   return `yjs/awareness/${name}/`;
 }
 
-export function yjsProviderUpdateKey(name: string): string {
-  return `yjs/provider/update/${name}`;
+export function yjsProviderClientKey(name: string): string {
+  return `yjs/provider/client/${name}`;
 }
 
-export function yjsProviderVectorKey(name: string): string {
-  return `yjs/provider/vector/${name}`;
+export function yjsProviderServerKey(name: string): string {
+  return `yjs/provider/server/${name}`;
 }
 
 export function yjsAwarenessKey(

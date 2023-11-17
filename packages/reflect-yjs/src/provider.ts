@@ -3,7 +3,7 @@ import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {Awareness} from './awareness.js';
 import type {Mutators} from './mutators.js';
-import {yjsProviderUpdateKey, yjsProviderVectorKey} from './mutators.js';
+import {yjsProviderClientKey, yjsProviderServerKey} from './mutators.js';
 
 export class Provider {
   readonly #reflect: Reflect<Mutators>;
@@ -25,7 +25,10 @@ export class Provider {
 
     this.#cancelUpdateSubscribe = reflect.subscribe(
       async tx => {
-        const v = await tx.get(yjsProviderUpdateKey(this.name));
+        let v = await tx.get(yjsProviderClientKey(this.name));
+        if (typeof v !== 'string') {
+          v = await tx.get(yjsProviderServerKey(this.name));
+        }
         return typeof v === 'string' ? v : null;
       },
       docStateFromReflect => {
@@ -38,12 +41,14 @@ export class Provider {
 
     this.#cancelVectorSubscribe = reflect.subscribe(
       async tx => {
-        const v = await tx.get(yjsProviderVectorKey(this.name));
+        const v = await tx.get(yjsProviderServerKey(this.name));
         return typeof v === 'string' ? v : null;
       },
       docStateFromReflect => {
         if (docStateFromReflect !== null) {
-          this.#vector = base64.toByteArray(docStateFromReflect);
+          this.#vector = Y.encodeStateVectorFromUpdateV2(
+            base64.toByteArray(docStateFromReflect),
+          );
         }
       },
     );
