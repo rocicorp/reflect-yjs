@@ -13,18 +13,19 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "rm -rf ./dist && node --no-warnings tool/build.js && tsc --emitDeclarationOnly",
+    "build": "node --no-warnings tool/build.js && tsc --emitDeclarationOnly",
     "format": "prettier --write *",
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx tool/ src/",
-    "prepack": "npm run build"
+    "prepack": "npx turbo build"
   },
   "dependencies": {
     "@rocicorp/reflect": "^0.37.202311060940",
     "base64-js": "^1.5.1",
     "y-protocols": "^1.0.5",
-    "yjs": "^13.5.38"
+    "yjs": "^13.5.38",
+    "lib0": "^0.2.85"
   },
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",

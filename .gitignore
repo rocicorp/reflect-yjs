@@ -10,6 +10,5 @@ dist
 .next
 *.tsbuildinfo
 next-env.d.ts
-reflect.config.json
 .reflect/
 **/*.tgz
