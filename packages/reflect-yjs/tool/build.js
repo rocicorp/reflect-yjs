@@ -9,7 +9,7 @@ const external = new Set(
   }),
 );
 
-const indexCtx = await esbuild.context({
+await esbuild.build({
   entryPoints: ['src/index.ts'],
   bundle: true,
   outfile: 'dist/index.js',
@@ -19,6 +19,3 @@ const indexCtx = await esbuild.context({
   format: 'esm',
   sourcemap: false,
 });
-
-await indexCtx.rebuild();
-void indexCtx.dispose();

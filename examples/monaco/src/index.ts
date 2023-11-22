@@ -1,3 +1,4 @@
+import {Provider, mutators as yjsMutators} from '@rocicorp/reflect-yjs';
 import {Reflect} from '@rocicorp/reflect/client';
 import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
@@ -9,7 +10,6 @@ import {nanoid} from 'nanoid';
 import {MonacoBinding} from 'y-monaco';
 import * as Y from 'yjs';
 import './index.css';
-import {Provider, mutators as yjsMutators} from '@rocicorp/reflect-yjs';
 import {randUserInfo} from './user-info.js';
 
 const userID = nanoid();
@@ -45,7 +45,7 @@ awareness.setLocalStateField('user', userInfo);
 const rootElement = must(document.getElementById('monaco-editor'));
 
 const editor = monaco.editor.create(rootElement, {
-  value: '', // MonacoBinding overwrites this value with the content of ytext
+  value: '', // MonacoBinding overwrites this value with the content of yText
   language: 'javascript',
   automaticLayout: true,
 });

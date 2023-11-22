@@ -1,28 +1,28 @@
 {
-    "name": "reflect-yjs",
-    "version": "0.0.0",
-    "private": true,
-    "license": "Apache-2.0",
-    "workspaces": [
-        "examples/*",
-        "packages/*"
-    ],
-    "scripts": {
-        "build": "turbo run build",
-        "dev": "turbo run dev",
-        "test": "turbo run test",
-        "lint": "turbo run lint",
-        "format": "turbo run format",
-        "check-format": "turbo run check-format",
-        "check-types": "turbo run check-types"
-    },
-    "devDependencies": {
-        "@rocicorp/eslint-config": "^0.5.1",
-        "@rocicorp/prettier-config": "^0.2.0",
-        "turbo": "^1.10.16"
-    },
-    "eslintConfig": {
-        "extends": "@rocicorp/eslint-config"
-    },
-    "prettier": "@rocicorp/prettier-config"
+  "name": "reflect-yjs",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "workspaces": [
+    "examples/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "check-format": "turbo run check-format",
+    "check-types": "turbo run check-types"
+  },
+  "devDependencies": {
+    "@rocicorp/eslint-config": "^0.5.1",
+    "@rocicorp/prettier-config": "^0.2.0",
+    "turbo": "^1.10.16"
+  },
+  "eslintConfig": {
+    "extends": "@rocicorp/eslint-config"
+  },
+  "prettier": "@rocicorp/prettier-config"
 }

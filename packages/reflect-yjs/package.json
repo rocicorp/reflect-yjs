@@ -21,11 +21,11 @@
     "prepack": "npx turbo build"
   },
   "dependencies": {
-    "@rocicorp/reflect": "^0.37.202311060940",
+    "@rocicorp/reflect": "^0.38.202311200859",
     "base64-js": "^1.5.1",
-    "y-protocols": "^1.0.5",
-    "yjs": "^13.5.38",
-    "lib0": "^0.2.85"
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.10",
+    "lib0": "~0.2.88"
   },
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",
