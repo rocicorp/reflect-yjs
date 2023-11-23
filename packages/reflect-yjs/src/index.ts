@@ -1,3 +1,3 @@
-export * from './awareness.js';
-export * from './provider.js';
-export * from './mutators.js';
+export {Awareness} from './awareness.js';
+export {mutators, type Mutators} from './mutators.js';
+export {Provider} from './provider.js';
