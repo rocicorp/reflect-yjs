@@ -19,7 +19,8 @@
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
-    "turbo": "^1.10.16"
+    "turbo": "^1.10.16",
+    "syncpack": "^10.5.1"
   },
   "eslintConfig": {
     "extends": "@rocicorp/eslint-config"

@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.1",
-    "@rocicorp/reflect-yjs": "0.1.0",
+    "@rocicorp/reflect-yjs": "0.0.1",
     "react-codemirror2": "^7.3.0",
     "y-codemirror": "^3.0.1"
   },

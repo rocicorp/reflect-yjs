@@ -1,7 +1,7 @@
 {
   "name": "@rocicorp/reflect-yjs",
   "description": "",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,7 @@
     "format": "prettier --write *",
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx tool/ src/",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
     "prepack": "npx turbo build"
   },
   "dependencies": {
