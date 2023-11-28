@@ -1,32 +1,72 @@
 # `@rocicorp/reflect-yjs`
 
-The goal of this repo is to show how to use Yjs with Reflect. It contains Reflect Yjs provider and an implementation of awareness.
+## Overview
 
-This was forked from replicache-yjs
+`@rocicorp/reflect-yjs` is a repository designed to demonstrate the integration of Yjs with Reflect. It provides a Reflect Yjs provider and implements awareness functionality. This repository includes examples for integrating Yjs with various editors like CodeMirror, Monaco and tiptap.
 
-It currently has examples for codemirror-yjs and monaco-yjs.
+## Features
 
-## Installation
+- **Reflect Yjs Provider**: An integration layer between Reflect and Yjs.
+- **Awareness Implementation**: Enables tracking and reflecting user presence and changes.
+- **Editor Integration Examples**: Contains practical examples for `codemirror-yjs`, `monaco-yjs`, `tiptap-yjs`.
 
-```
-npm install @rocicorp/reflect-yjs
-```
+## Getting Started
 
-## To run an example
+### Installation
 
-```bash
-npm install
-npm run build
-cd examples/codemirror
-npm run watch
-```
-
-## To Publish
+To install `@rocicorp/reflect-yjs`, run the following command:
 
 ```bash
-# Publish the Reflect server
-npx reflect publish
-
-# Publish the UI somewhere, i.e. Vercel
-npx vercel
+npm install @rocicorp/reflect-yjs@latest
 ```
+
+### Running an Example
+
+To explore an example, such as the CodeMirror integration, follow these steps:
+
+1. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+2. **Build the project**
+
+   ```bash
+   npm run build
+   ```
+
+3. **Navigate to the example directory**
+
+   ```bash
+   cd examples/codemirror
+   ```
+
+4. **Start the example**
+   ```bash
+   npm run watch
+   ```
+
+## Publishing Your Project
+
+To publish your project with Reflect and deploy the UI:
+
+1. **Publish the Reflect server**
+
+   ```bash
+   npx reflect publish
+   ```
+
+   **note:** if you are using the tiptap example you most remove the following section from `reflect.config.json` before you try to publish
+
+   ```
+   "apps": {
+    "default": {
+      "appID": "lpime00a"
+    }
+  }
+
+2. **Deploy the UI (Example: using Vercel)**
+   ```bash
+   npx vercel
+   ```
