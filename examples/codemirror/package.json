@@ -17,7 +17,8 @@
     "@codemirror/lang-javascript": "^6.2.1",
     "@rocicorp/reflect-yjs": "0.0.1",
     "react-codemirror2": "^7.3.0",
-    "y-codemirror": "^3.0.1"
+    "y-codemirror": "^3.0.1",
+    "@rocicorp/reflect": "^0.38.202311200859"
   },
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",

@@ -3,5 +3,10 @@
   "templates": {
     "package.json": "package.json",
     ".env.template": ".env.local"
+  },
+  "apps": {
+    "default": {
+      "appID": "lpime00a"
+    }
   }
 }

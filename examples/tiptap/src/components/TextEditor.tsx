@@ -12,7 +12,7 @@ import Youtube from "@tiptap/extension-youtube";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { EditorView } from "prosemirror-view";
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from "react";
 import * as Y from "yjs";
 import { CustomTaskItem } from "./CustomTaskItem";
 import { SelectionMenu } from "./SelectionMenu";
@@ -94,7 +94,6 @@ export function Editor() {
   const [provider, setProvider] = useState<Provider>();
 
   useEffect(() => {
-
     console.log("creating new reflect instance");
     const reflect = new Reflect({
       server,

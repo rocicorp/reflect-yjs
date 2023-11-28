@@ -41,7 +41,8 @@
     "nanoid": "^5.0.3",
     "next": "^13.5.4",
     "typescript": "^5.3.2",
-    "yjs": "^13.6.10"
+    "yjs": "^13.6.10",
+    "@rocicorp/reflect": "^0.38.202311200859"
   },
   "peerDependencies": {
     "react": "^18.2.0",
