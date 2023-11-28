@@ -80,9 +80,6 @@ const userInfo = {
   userInfo: USER_INFO[Math.floor(Math.random() * 10) % USER_INFO.length],
 };
 
-const userID = nanoid();
-const roomID = `sekret`; // `r-${Math.floor(new Date().getTime() / (1000 * 60 * 60))}`;
-
 const server: string | undefined = process.env.NEXT_PUBLIC_REFLECT_URL;
 if (!server) {
   throw new Error("NEXT_PUBLIC_REFLECT_URL required");
@@ -95,6 +92,12 @@ export function Editor() {
 
   useEffect(() => {
     console.log("creating new reflect instance");
+
+    const userID = nanoid();
+    const roomID =
+      new URLSearchParams(location.search).get("roomID") ??
+      `r-${Math.floor(new Date().getTime() / (1000 * 60 * 60))}`;
+
     const reflect = new Reflect({
       server,
       userID,
