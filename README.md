@@ -57,16 +57,6 @@ To publish your project with Reflect and deploy the UI:
    npx reflect publish
    ```
 
-   **note:** if you are using the tiptap example you most remove the following section from `reflect.config.json` before you try to publish
-
-   ```json
-   "apps": {
-    "default": {
-      "appID": "lpime00a"
-    }
-   }
-   ```
-
 2. **Deploy the UI (Example: using Vercel)**
    ```bash
    npx vercel
