@@ -67,45 +67,6 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   _checkInterval: number = 0;
 
-  #handlePresenceChange() {
-    const states: Map<number, ReadonlyJSONObject> = new Map();
-
-    for (const presentClientID of this.#presentClientIDs) {
-      const clients = this.#clients.get(presentClientID);
-      if (clients) {
-        for (const [yjsClientID, state] of clients) {
-          states.set(yjsClientID, state);
-        }
-      }
-    }
-
-    const prevStates = this.states;
-    const added: number[] = [];
-    const removed: number[] = [];
-    const changed: number[] = [];
-    for (const [yjsClientID, state] of prevStates) {
-      const currState = states.get(yjsClientID);
-      if (currState === undefined) {
-        removed.push(yjsClientID);
-      } else if (currState !== state && !equalityDeep(currState, state)) {
-        changed.push(yjsClientID);
-      }
-    }
-    for (const yjsClientID of states.keys()) {
-      if (prevStates.get(yjsClientID) === undefined) {
-        added.push(yjsClientID);
-      }
-    }
-    this.states = states;
-
-    if (added.length || removed.length || changed.length) {
-      this.emit('change', [{added, updated: changed, removed}, 'local']);
-      // NOTE: with reflect we can't tell if something was set to the same value
-      // because we do not propagate non changes, therefore we don't need to ever call 'update'
-      // this.emit('update', [{added, updated, removed}, 'local']);
-    }
-  }
-
   readonly #unsubscribe: () => void;
 
   constructor(reflect: Reflect<AwarenessMutators>, name: string, doc: Y.Doc) {
@@ -145,6 +106,45 @@ export class Awareness extends ObservableV2<Events> implements YJSAwareness {
     };
 
     this.setLocalState({});
+  }
+
+  #handlePresenceChange() {
+    const states: Map<number, ReadonlyJSONObject> = new Map();
+
+    for (const presentClientID of this.#presentClientIDs) {
+      const clients = this.#clients.get(presentClientID);
+      if (clients) {
+        for (const [yjsClientID, state] of clients) {
+          states.set(yjsClientID, state);
+        }
+      }
+    }
+
+    const prevStates = this.states;
+    const added: number[] = [];
+    const removed: number[] = [];
+    const changed: number[] = [];
+    for (const [yjsClientID, state] of prevStates) {
+      const currState = states.get(yjsClientID);
+      if (currState === undefined) {
+        removed.push(yjsClientID);
+      } else if (currState !== state && !equalityDeep(currState, state)) {
+        changed.push(yjsClientID);
+      }
+    }
+    for (const yjsClientID of states.keys()) {
+      if (prevStates.get(yjsClientID) === undefined) {
+        added.push(yjsClientID);
+      }
+    }
+    this.states = states;
+
+    if (added.length || removed.length || changed.length) {
+      this.emit('change', [{added, updated: changed, removed}, 'local']);
+      // NOTE: with reflect we can't tell if something was set to the same value
+      // because we do not propagate non changes, therefore we don't need to ever call 'update'
+      // this.emit('update', [{added, updated, removed}, 'local']);
+    }
   }
 
   get clientID() {
