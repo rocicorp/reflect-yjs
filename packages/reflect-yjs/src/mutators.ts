@@ -50,10 +50,6 @@ export async function updateYJS(
   }
 }
 
-function yjsAwarenessPrefix(name: string) {
-  return `yjs/awareness/${name}/`;
-}
-
 export function yjsProviderClientKey(name: string): string {
   return `yjs/provider/client/${name}`;
 }
@@ -67,7 +63,28 @@ export function yjsAwarenessKey(
   reflectClientID: ClientID,
   yjsClientID: number,
 ): string {
-  return `${yjsAwarenessPrefix(name)}${reflectClientID}/${yjsClientID}`;
+  // -c/${reflectClientID} is a client key space and these are ephemeral. They
+  // get deleted when Reflect knows that the client can never come back.
+  return `-/c/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
+}
+
+function parseKeyIntoClientIDs(
+  key: string,
+  name: string,
+): undefined | [ClientID, string] {
+  // `-/c/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
+  //  0/1/2                 /3  /4        /5      /6
+  const parts = key.split('/');
+  if (
+    parts[0] !== '-' ||
+    parts[1] !== 'c' ||
+    parts[3] !== 'yjs' ||
+    parts[4] !== 'awareness' ||
+    parts[5] !== name
+  ) {
+    return undefined;
+  }
+  return [parts[2], parts[6]];
 }
 
 export async function yjsSetLocalStateField(
@@ -148,14 +165,17 @@ export async function listClientStates(
   name: string,
 ): Promise<[ClientID, number, ReadonlyJSONObject][]> {
   const entries: [ClientID, number, ReadonlyJSONObject][] = [];
-  const prefix = yjsAwarenessPrefix(name);
+  const prefix = '-/c/';
   for await (const [key, value] of tx.scan({prefix}).entries()) {
-    const [reflectClientID, yjsClientID] = key.slice(prefix.length).split('/');
-    entries.push([
-      reflectClientID,
-      Number(yjsClientID),
-      value as ReadonlyJSONObject,
-    ]);
+    const parts = parseKeyIntoClientIDs(key, name);
+    if (parts) {
+      const [reflectClientID, yjsClientID] = parts;
+      entries.push([
+        reflectClientID,
+        Number(yjsClientID),
+        value as ReadonlyJSONObject,
+      ]);
+    }
   }
   return entries;
 }
