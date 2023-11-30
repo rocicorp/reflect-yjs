@@ -6,5 +6,6 @@
     "outDir": "./dist"
   },
   "exclude": ["dist", "tool"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.test.ts"],
+  "types": ["node", "mocha"]
 }

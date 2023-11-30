@@ -20,7 +20,9 @@
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
     "prepack": "npx turbo build",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "test": "web-test-runner",
+    "test:watch": "web-test-runner --watch"
   },
   "dependencies": {
     "@rocicorp/reflect": "^0.38.202311200859",
@@ -32,8 +34,19 @@
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/sinon": "^10.0.11",
+    "@web/dev-server": "^0.4.0",
+    "@web/dev-server-esbuild": "^1.0.0",
+    "@web/test-runner": "^0.18.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "chai": "^5.0.0-alpha.2",
     "esbuild": "^0.19.4",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "mocha": "^10.2.0",
+    "sinon": "^13.0.1",
+    "playwright": "^1.39.0"
   },
   "engines": {
     "node": ">=18"
