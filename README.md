@@ -1,8 +1,8 @@
 # `@rocicorp/reflect-yjs`
 
-## Overview
+## Yjs for Reflect apps. 
 
-`@rocicorp/reflect-yjs` is a repository designed to demonstrate the integration of Yjs with Reflect. It provides a Reflect Yjs provider and implements awareness functionality. This repository includes examples for integrating Yjs with various editors like CodeMirror, Monaco and tiptap.
+This library enables syncing of Yjs documents via Reflect, for use in text editing. This repository includes examples for integrating Yjs with various editors like CodeMirror, Monaco and tiptap.
 
 ## Features
 
