@@ -9,8 +9,8 @@ export class Provider {
   readonly #reflect: Reflect<Mutators>;
   readonly #ydoc: Y.Doc;
   #awareness: Awareness | null = null;
-  #cancelUpdateSubscribe: () => void;
-  #cancelVectorSubscribe: () => void;
+  readonly #cancelUpdateSubscribe: () => void;
+  readonly #cancelVectorSubscribe: () => void;
 
   readonly name: string;
   #vector: Uint8Array | null = null;

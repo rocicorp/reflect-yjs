@@ -18,19 +18,22 @@
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
-    "prepack": "npx turbo build"
+    "prepack": "npx turbo build",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "@rocicorp/reflect": "^0.38.202311200859",
     "base64-js": "^1.5.1",
+    "lib0": "~0.2.88",
     "y-protocols": "^1.0.6",
-    "yjs": "^13.6.10",
-    "lib0": "~0.2.88"
+    "yjs": "^13.6.10"
   },
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
-    "esbuild": "^0.19.4"
+    "esbuild": "^0.19.4",
+    "vitest": "^0.34.6"
   },
   "engines": {
     "node": ">=18"
