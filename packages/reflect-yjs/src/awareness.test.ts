@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {expect} from 'chai';
+import {expect, test, beforeEach, suite} from 'vitest';
 import {Awareness} from './awareness.js';
 import {resolver} from '@rocicorp/resolver';
 
@@ -12,11 +12,12 @@ import {Reflect} from '@rocicorp/reflect/client';
 let aw1: Awareness;
 let aw2: Awareness;
 
-let reflect: Reflect<Mutators>;
+// let reflect: Reflect<Mutators>;
 let doc1: Y.Doc;
 let doc2: Y.Doc;
 
-setup(() => {
+let reflect: Reflect<Mutators>;
+beforeEach(() => {
   reflect = new Reflect<Mutators>({
     server: undefined,
     userID: '1',
@@ -32,61 +33,68 @@ setup(() => {
   doc2.clientID = 1;
   aw2 = new Awareness(reflect, 'testName', doc2);
 });
+suite('Awareness', () => {
+  test('verify awareness changes are present multiple instances', async () => {
+    expect(aw1).to.be.an.instanceof(Awareness);
 
-teardown(() => {});
+    const initialState = aw1.getLocalState();
+    expect(initialState).to.deep.equal(null);
 
-test('Awareness', async () => {
-  expect(aw1).to.be.an.instanceof(Awareness);
+    const aw1changes: {
+      added: number[];
+      updated: number[];
+      removed: number[];
+    }[] = [];
+    const aw1changeResolvers = [resolver<void>(), resolver<void>()];
+    let aw1changecalls = 0;
 
-  const initialState = aw1.getLocalState();
-  expect(initialState).to.deep.equal(null);
+    aw1.on('change', change => {
+      aw1changes.push(change);
+      aw1changeResolvers[aw1changecalls++].resolve();
+    });
+    const aw2changes: {
+      added: number[];
+      updated: number[];
+      removed: number[];
+    }[] = [];
+    const aw2changeResolvers = [resolver<void>(), resolver<void>()];
+    let aw2changecalls = 0;
+    aw2.on('change', change => {
+      aw2changes.push(change);
+      aw2changeResolvers[aw2changecalls++].resolve();
+    });
 
-  const aw1changes: {added: number[]; updated: number[]; removed: number[]}[] =
-    [];
-  const aw1changeResolvers = [resolver<void>(), resolver<void>()];
-  let aw1changecalls = 0;
+    await aw2changeResolvers[0].promise;
+    t.compare(aw1.getStates(), aw2.getStates());
+    t.compare(
+      aw2.getStates(),
+      new Map([
+        [0, {}],
+        [1, {}],
+      ]),
+    );
 
-  aw1.on('change', change => {
-    aw1changes.push(change);
-    aw1changeResolvers[aw1changecalls++].resolve();
+    expect(aw1changes).to.deep.equal(aw2changes);
+    expect(aw2changes).to.deep.equal([
+      {added: [0, 1], updated: [], removed: []},
+    ]);
+
+    aw1.setLocalState({x: 3});
+
+    await aw2changeResolvers[1].promise;
+    t.compare(aw1.getStates(), aw2.getStates());
+    t.compare(
+      aw2.getStates(),
+      new Map([
+        [0, {x: 3}],
+        [1, {}],
+      ]),
+    );
+
+    expect(aw1changes).to.deep.equal(aw2changes);
+    expect(aw2changes).to.deep.equal([
+      {added: [0, 1], updated: [], removed: []},
+      {added: [], updated: [0], removed: []},
+    ]);
   });
-  const aw2changes: {added: number[]; updated: number[]; removed: number[]}[] =
-    [];
-  const aw2changeResolvers = [resolver<void>(), resolver<void>()];
-  let aw2changecalls = 0;
-  aw2.on('change', change => {
-    aw2changes.push(change);
-    aw2changeResolvers[aw2changecalls++].resolve();
-  });
-
-  await aw2changeResolvers[0].promise;
-  t.compare(aw1.getStates(), aw2.getStates());
-  t.compare(
-    aw2.getStates(),
-    new Map([
-      [0, {}],
-      [1, {}],
-    ]),
-  );
-
-  expect(aw1changes).to.deep.equal(aw2changes);
-  expect(aw2changes).to.deep.equal([{added: [0, 1], updated: [], removed: []}]);
-
-  aw1.setLocalState({x: 3});
-
-  await aw2changeResolvers[1].promise;
-  t.compare(aw1.getStates(), aw2.getStates());
-  t.compare(
-    aw2.getStates(),
-    new Map([
-      [0, {x: 3}],
-      [1, {}],
-    ]),
-  );
-
-  expect(aw1changes).to.deep.equal(aw2changes);
-  expect(aw2changes).to.deep.equal([
-    {added: [0, 1], updated: [], removed: []},
-    {added: [], updated: [0], removed: []},
-  ]);
 });
