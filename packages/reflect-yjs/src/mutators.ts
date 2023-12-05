@@ -31,12 +31,14 @@ export async function updateYJS(
   }
 }
 
+const yjsProviderKeyPrefix = 'yjs/provider/';
+
 function yjsProviderClientUpdateKey(name: string): string {
-  return `yjs/provider/client/${name}`;
+  return `${yjsProviderKeyPrefix}client/${name}`;
 }
 
 function yjsProviderServerUpdatePrefix(name: string): string {
-  return `yjs/provider/server/${name}/`;
+  return `${yjsProviderKeyPrefix}server/${name}/`;
 }
 
 function setClientUpdate(name: string, update: string, tx: WriteTransaction) {
@@ -50,30 +52,25 @@ async function setServerUpdate(
 ) {
   const writes = [];
   let i = 0;
+  const existingEntries = tx
+    .scan({
+      prefix: yjsProviderServerUpdatePrefix(name),
+    })
+    .entries();
   for (; i * CHUNK_LENGTH < update.length; i++) {
-    const existing = await tx.get(yjsProviderServerKey(name, i));
+    const next = await existingEntries.next();
+    const existing = next.done ? undefined : next.value[1];
     const chunk = update.substring(
       i * CHUNK_LENGTH,
       i * CHUNK_LENGTH + CHUNK_LENGTH,
     );
     if (existing !== chunk) {
-      writes.push(
-        tx.set(
-          yjsProviderServerKey(name, i),
-          update.substring(i * CHUNK_LENGTH, i * CHUNK_LENGTH + CHUNK_LENGTH),
-        ),
-      );
+      writes.push(tx.set(yjsProviderServerKey(name, i), chunk));
     }
   }
-  for await (const key of tx
-    .scan({
-      prefix: yjsProviderServerUpdatePrefix(name),
-      start: {
-        key: yjsProviderServerKey(name, i),
-        exclusive: false,
-      },
-    })
-    .keys()) {
+  // If the previous value had more chunks than thew new value, delete these
+  // additional chunks.
+  for await (const [key] of existingEntries) {
     writes.push(tx.del(key));
   }
   await Promise.all(writes);
@@ -82,7 +79,7 @@ async function setServerUpdate(
 // Supports updates up to length 10^14
 const CHUNK_LENGTH = 10_000;
 export function yjsProviderServerKey(name: string, chunkIndex: number): string {
-  return `yjs/provider/server/${name}/${chunkIndex
+  return `${yjsProviderServerUpdatePrefix(name)}${chunkIndex
     .toString(10)
     .padStart(10, '0')}`;
 }

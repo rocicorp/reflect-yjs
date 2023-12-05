@@ -22,24 +22,20 @@ export class Provider {
     ydoc.on('update', this.#handleUpdate);
     ydoc.on('destroy', this.#handleDestroy);
 
-    this.#cancelSubscribe = reflect.subscribe(
-      async tx => {
-        const serverUpdate = await getServerUpdate(this.name, tx);
-        return {
-          serverUpdate,
-          clientOverServerUpdate:
-            (await await getClientUpdate(this.name, tx)) ?? serverUpdate,
-        };
-      },
-      ({serverUpdate, clientOverServerUpdate}) => {
-        if (serverUpdate !== undefined) {
+    this.#cancelSubscribe = reflect.subscribe<[string | null, string | null]>(
+      async tx => [
+        (await getServerUpdate(this.name, tx)) ?? null,
+        (await getClientUpdate(this.name, tx)) ?? null,
+      ],
+      ([serverUpdate, clientUpdate]) => {
+        if (serverUpdate !== null) {
           this.#vector = Y.encodeStateVectorFromUpdateV2(
             base64.toByteArray(serverUpdate),
           );
         }
-        if (clientOverServerUpdate !== undefined) {
-          const update = base64.toByteArray(clientOverServerUpdate);
-          Y.applyUpdateV2(ydoc, update);
+        const update = clientUpdate ?? serverUpdate;
+        if (update !== null) {
+          Y.applyUpdateV2(ydoc, base64.toByteArray(update));
         }
       },
     );
