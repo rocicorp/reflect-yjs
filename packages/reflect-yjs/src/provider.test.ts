@@ -53,18 +53,15 @@ suite('Provider', () => {
     test('subscribes at construction time', () => {
       const reflect = fakeReflect();
       new Provider(reflect, 'test', new Doc());
-      expect(reflect.subscribe).toHaveBeenCalledTimes(2);
+      expect(reflect.subscribe).toHaveBeenCalledTimes(1);
     });
   });
 
   test('destroy unsubscribes', () => {
     const reflect = new FakeReflect();
     reflect.subscribe.mockClear();
-    const unsubscribe1 = vi.fn();
-    const unsubscribe2 = vi.fn();
-    reflect.subscribe
-      .mockImplementationOnce(() => unsubscribe1)
-      .mockImplementationOnce(() => unsubscribe2);
+    const unsubscribe = vi.fn();
+    reflect.subscribe.mockImplementationOnce(() => unsubscribe);
 
     const p = new Provider(
       reflect as unknown as Reflect<Mutators>,
@@ -73,7 +70,6 @@ suite('Provider', () => {
     );
 
     p.destroy();
-    expect(unsubscribe1).toHaveBeenCalledTimes(1);
-    expect(unsubscribe2).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 });
