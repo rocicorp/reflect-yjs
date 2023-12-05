@@ -1,19 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {expect, test, beforeEach, suite} from 'vitest';
+import {expect, test, beforeEach, suite, afterEach} from 'vitest';
 import {Awareness} from './awareness.js';
 import {resolver} from '@rocicorp/resolver';
 
 import {Mutators, mutators} from './mutators.js';
 import * as Y from 'yjs';
 
-import * as t from 'lib0/testing.js';
 import {Reflect} from '@rocicorp/reflect/client';
-
-let aw1: Awareness;
-let aw2: Awareness;
-
-let doc1: Y.Doc;
-let doc2: Y.Doc;
 
 let reflect: Reflect<Mutators>;
 
@@ -24,17 +17,22 @@ beforeEach(() => {
     roomID: '1',
     mutators,
   });
-
-  doc1 = new Y.Doc();
-  doc1.clientID = 0;
-  aw1 = new Awareness(reflect, 'testName', doc1);
-
-  doc2 = new Y.Doc();
-  doc2.clientID = 1;
-  aw2 = new Awareness(reflect, 'testName', doc2);
 });
+
+afterEach(async () => {
+  await reflect.close();
+});
+
 suite('Awareness', () => {
   test('verify awareness changes are present multiple instances', async () => {
+    const doc1 = new Y.Doc();
+    doc1.clientID = 0;
+    const aw1 = new Awareness(reflect, 'testName', doc1);
+
+    const doc2 = new Y.Doc();
+    doc2.clientID = 1;
+    const aw2 = new Awareness(reflect, 'testName', doc2);
+
     expect(aw1).to.be.an.instanceof(Awareness);
 
     const initialState = aw1.getLocalState();
@@ -65,9 +63,8 @@ suite('Awareness', () => {
     });
 
     await aw2changeResolvers[0].promise;
-    t.compare(aw1.getStates(), aw2.getStates());
-    t.compare(
-      aw2.getStates(),
+    expect(aw1.getStates()).toEqual(aw2.getStates());
+    expect(aw2.getStates()).toEqual(
       new Map([
         [0, {}],
         [1, {}],
@@ -82,9 +79,8 @@ suite('Awareness', () => {
     aw1.setLocalState({x: 3});
 
     await aw2changeResolvers[1].promise;
-    t.compare(aw1.getStates(), aw2.getStates());
-    t.compare(
-      aw2.getStates(),
+    expect(aw1.getStates()).toEqual(aw2.getStates());
+    expect(aw2.getStates()).toEqual(
       new Map([
         [0, {x: 3}],
         [1, {}],
