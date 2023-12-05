@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "exclude": ["dist", "tool"],
+  "exclude": ["dist"],
   "include": ["src/**/*.ts", "src/**/*.test.ts"],
-  "types": ["node", "mocha"]
+  "types": ["node"]
 }
