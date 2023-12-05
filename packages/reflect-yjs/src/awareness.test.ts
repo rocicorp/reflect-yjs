@@ -12,11 +12,11 @@ import {Reflect} from '@rocicorp/reflect/client';
 let aw1: Awareness;
 let aw2: Awareness;
 
-// let reflect: Reflect<Mutators>;
 let doc1: Y.Doc;
 let doc2: Y.Doc;
 
 let reflect: Reflect<Mutators>;
+
 beforeEach(() => {
   reflect = new Reflect<Mutators>({
     server: undefined,

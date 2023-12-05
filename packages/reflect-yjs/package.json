@@ -20,7 +20,7 @@
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
     "prepack": "npx turbo build",
     "test": "vitest run --browser.provider=playwright --browser.name=chromium --browser.headless",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch --browser.provider=playwright --browser.name=chromium --browser.headless"
   },
   "dependencies": {
     "@rocicorp/reflect": "^0.38.202311200859",
