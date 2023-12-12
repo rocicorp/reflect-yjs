@@ -7,6 +7,7 @@ import type {
 } from '@rocicorp/reflect';
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
+import {chunk, unchunk} from './chunk.js';
 
 export const mutators = {
   yjsSetLocalStateField,
@@ -20,68 +21,119 @@ export async function updateYJS(
   tx: WriteTransaction,
   {name, update}: {name: string; update: string},
 ) {
-  const existing = await getServerUpdate(name, tx);
-  const set = tx.location === 'client' ? setClientUpdate : setServerUpdate;
-  if (!existing) {
-    await set(name, update, tx);
+  if (tx.location === 'server') {
+    const existingServerUpdate = await getServerUpdate(name, tx);
+    if (!existingServerUpdate) {
+      await setServerUpdate(name, base64.toByteArray(update), tx);
+    } else {
+      const updates = [existingServerUpdate, base64.toByteArray(update)];
+      const merged = Y.mergeUpdatesV2(updates);
+      await setServerUpdate(name, merged, tx);
+    }
   } else {
-    const updates = [base64.toByteArray(existing), base64.toByteArray(update)];
-    const merged = Y.mergeUpdatesV2(updates);
-    await set(name, base64.fromByteArray(merged), tx);
+    await setClientUpdate(name, update, tx);
   }
 }
 
-const yjsProviderKeyPrefix = 'yjs/provider/';
-
-function yjsProviderClientUpdateKey(name: string): string {
-  return `${yjsProviderKeyPrefix}client/${name}`;
+export function yjsProviderKeyPrefix(name: string): string {
+  return `'yjs/provider/${name}/`;
 }
 
-function yjsProviderServerUpdatePrefix(name: string): string {
-  return `${yjsProviderKeyPrefix}server/${name}/`;
+export function yjsProviderClientUpdateKey(name: string): string {
+  return `${yjsProviderKeyPrefix(name)}client`;
+}
+
+function yjsProviderServerUpdateKeyPrefix(name: string): string {
+  return `${yjsProviderKeyPrefix(name)}/server/`;
+}
+
+export function yjsProviderServerUpdateMetaKey(name: string): string {
+  return `${yjsProviderServerUpdateKeyPrefix(name)}meta`;
+}
+
+export function yjsProviderServerUpdateChunkKeyPrefix(name: string): string {
+  return `${yjsProviderServerUpdateKeyPrefix(name)}chunk/`;
+}
+
+export function yjsProviderServerChunkKey(
+  name: string,
+  chunkHash: string,
+): string {
+  return `${yjsProviderServerUpdateChunkKeyPrefix(name)}${chunkHash}`;
 }
 
 function setClientUpdate(name: string, update: string, tx: WriteTransaction) {
   return tx.set(yjsProviderClientUpdateKey(name), update);
 }
 
+const AVG_CHUNK_SIZE_B = 1024;
+const MIN_CHUNK_SIZE_B = 256;
+const MAX_CHUNK_SIZE_B = 2048;
 async function setServerUpdate(
   name: string,
-  update: string,
+  update: Uint8Array,
   tx: WriteTransaction,
 ) {
-  const writes = [];
-  let i = 0;
-  const existingEntries = tx
-    .scan({
-      prefix: yjsProviderServerUpdatePrefix(name),
-    })
-    .entries();
-  for (; i * CHUNK_LENGTH < update.length; i++) {
-    const next = await existingEntries.next();
-    const existing = next.done ? undefined : next.value[1];
-    const chunk = update.substring(
-      i * CHUNK_LENGTH,
-      i * CHUNK_LENGTH + CHUNK_LENGTH,
-    );
-    if (existing !== chunk) {
-      writes.push(tx.set(yjsProviderServerKey(name, i), chunk));
-    }
-  }
+  const updateString = base64.fromByteArray(update);
+  const existingInfo = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
+    | undefined
+    | ChunkedUpdateMeta;
+  const toDelete: Set<string> = existingInfo
+    ? new Set(existingInfo.chunkHashes)
+    : new Set();
+
+  const chunkInfo = await chunk(
+    AVG_CHUNK_SIZE_B,
+    MIN_CHUNK_SIZE_B,
+    MAX_CHUNK_SIZE_B,
+    update,
+  );
+  // console.log('S-----------------------------------');
+  // for (const [hash, chunk] of chunkInfo.chunksByHash) {
+  //   console.log('\n\n\n\n\n');
+  //   console.log(hash, '=', chunk.substring(0, 50));
+  // }
+  // console.log('E-----------------------------------');
+
   // If the previous value had more chunks than thew new value, delete these
   // additional chunks.
-  for await (const [key] of existingEntries) {
-    writes.push(tx.del(key));
+  const updateMeta: ChunkedUpdateMeta = {
+    chunkHashes: chunkInfo.sourceAsChunkHashes,
+    length: update.length,
+  };
+  await tx.set(yjsProviderServerUpdateMetaKey(name), updateMeta);
+  const writes = [];
+  let common = 0;
+  let commonSize = 0;
+  let size = 0;
+  for (const [hash, chunk] of chunkInfo.chunksByHash) {
+    size += chunk.length;
+    if (toDelete.has(hash)) {
+      common++;
+      toDelete.delete(hash);
+      commonSize += chunk.length;
+    } else {
+      writes.push(tx.set(yjsProviderServerChunkKey(name, hash), chunk));
+    }
+  }
+  for (const hash of toDelete) {
+    writes.push(tx.del(yjsProviderServerChunkKey(name, hash)));
   }
   await Promise.all(writes);
-}
 
-// Supports updates up to length 10^14
-const CHUNK_LENGTH = 10_000;
-export function yjsProviderServerKey(name: string, chunkIndex: number): string {
-  return `${yjsProviderServerUpdatePrefix(name)}${chunkIndex
-    .toString(10)
-    .padStart(10, '0')}`;
+  const readUpdate = base64.fromByteArray(
+    (await getServerUpdate(name, tx)) ?? new Uint8Array(),
+  );
+  console.log(
+    'SAME?',
+    updateString === readUpdate,
+    'COMMON',
+    common,
+    '/',
+    chunkInfo.chunksByHash.size,
+    'PERCENT SIZE COMMON',
+    commonSize / size,
+  );
 }
 
 export async function getClientUpdate(
@@ -92,17 +144,34 @@ export async function getClientUpdate(
   return typeof v === 'string' ? v : undefined;
 }
 
-export async function getServerUpdate(
+export type ChunkedUpdateMeta = {
+  chunkHashes: string[];
+  length: number;
+};
+
+async function getServerUpdate(
   name: string,
   tx: ReadTransaction,
-): Promise<string | undefined> {
+): Promise<Uint8Array | undefined> {
+  const updateMeta = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
+    | undefined
+    | ChunkedUpdateMeta;
+  if (updateMeta === undefined) {
+    return undefined;
+  }
+  const chunksPrefix = yjsProviderServerUpdateChunkKeyPrefix(name);
   const chunks = await tx
     .scan({
-      prefix: yjsProviderServerUpdatePrefix(name),
+      prefix: chunksPrefix,
     })
-    .values()
-    .toArray();
-  return chunks.length === 0 ? undefined : chunks.join('');
+    .entries();
+  const chunksByHash = new Map<string, Uint8Array>();
+  const chunksPrefixLength = chunksPrefix.length;
+  for await (const [key, value] of chunks) {
+    const hash = key.substring(chunksPrefixLength, key.length);
+    chunksByHash.set(hash, base64.toByteArray(value as string));
+  }
+  return unchunk(chunksByHash, updateMeta.chunkHashes, updateMeta.length);
 }
 
 export function yjsAwarenessKey(
