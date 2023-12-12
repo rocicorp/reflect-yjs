@@ -1,9 +1,6 @@
 /**
  * Based on https://github.com/ronomon/deduplication/blob/master/binding.js
  */
-
-import * as base64 from 'base64-js';
-
 const AVERAGE_MIN = 256;
 const AVERAGE_MAX = 268435456;
 const MINIMUM_MIN = 64;
@@ -113,7 +110,7 @@ export async function chunk(
   maximum: number,
   source: Uint8Array,
 ): Promise<{
-  chunksByHash: Map<string, string>;
+  chunksByHash: Map<string, Uint8Array>;
   sourceAsChunkHashes: string[];
 }> {
   assertInteger('average', average);
@@ -140,7 +137,7 @@ export async function chunk(
   assertInteger('mask2', mask2);
   let sourceOffset = 0;
   const sourceLength = source.length;
-  const chunksByHash = new Map<string, string>();
+  const chunksByHash = new Map<string, Uint8Array>();
   const sourceAsChunkHashes: string[] = [];
   while (sourceOffset < sourceLength) {
     const chunkSize = cut(
@@ -167,7 +164,7 @@ export async function chunk(
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
     if (!chunksByHash.has(hash)) {
-      chunksByHash.set(hash, base64.fromByteArray(chunk));
+      chunksByHash.set(hash, chunk);
     }
     sourceAsChunkHashes.push(hash);
     sourceOffset += chunkSize;

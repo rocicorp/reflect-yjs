@@ -74,7 +74,6 @@ async function setServerUpdate(
   update: Uint8Array,
   tx: WriteTransaction,
 ) {
-  const updateString = base64.fromByteArray(update);
   const existingInfo = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
     | undefined
     | ChunkedUpdateMeta;
@@ -88,15 +87,6 @@ async function setServerUpdate(
     MAX_CHUNK_SIZE_B,
     update,
   );
-  // console.log('S-----------------------------------');
-  // for (const [hash, chunk] of chunkInfo.chunksByHash) {
-  //   console.log('\n\n\n\n\n');
-  //   console.log(hash, '=', chunk.substring(0, 50));
-  // }
-  // console.log('E-----------------------------------');
-
-  // If the previous value had more chunks than thew new value, delete these
-  // additional chunks.
   const updateMeta: ChunkedUpdateMeta = {
     chunkHashes: chunkInfo.sourceAsChunkHashes,
     length: update.length,
@@ -113,7 +103,12 @@ async function setServerUpdate(
       toDelete.delete(hash);
       commonSize += chunk.length;
     } else {
-      writes.push(tx.set(yjsProviderServerChunkKey(name, hash), chunk));
+      writes.push(
+        tx.set(
+          yjsProviderServerChunkKey(name, hash),
+          base64.fromByteArray(chunk),
+        ),
+      );
     }
   }
   for (const hash of toDelete) {
@@ -121,17 +116,12 @@ async function setServerUpdate(
   }
   await Promise.all(writes);
 
-  const readUpdate = base64.fromByteArray(
-    (await getServerUpdate(name, tx)) ?? new Uint8Array(),
-  );
   console.log(
-    'SAME?',
-    updateString === readUpdate,
-    'COMMON',
+    'common',
     common,
     '/',
     chunkInfo.chunksByHash.size,
-    'PERCENT SIZE COMMON',
+    'percent size common',
     commonSize / size,
   );
 }

@@ -14,10 +14,14 @@ import {Provider} from './provider.js';
 type MockedMutator<Fn extends (tx: WriteTransaction, ...args: any[]) => any> =
   MockedFunction<(arg: Parameters<Fn>[1]) => ReturnType<Fn>>;
 
+type Subscribe = Reflect<MutatorDefs>['subscribe'];
 type ExperimentalWatch = Reflect<MutatorDefs>['experimentalWatch'];
 type SubscribeToPresence = Reflect<MutatorDefs>['subscribeToPresence'];
 
 class FakeReflect {
+  subscribe: MockedFunction<Subscribe> = vi
+    .fn()
+    .mockReturnValue(() => undefined);
   experimentalWatch: MockedFunction<ExperimentalWatch> = vi
     .fn()
     .mockReturnValue(() => undefined);
