@@ -115,14 +115,8 @@ async function setServerUpdate(
     writes.push(tx.del(yjsProviderServerChunkKey(name, hash)));
   }
   await Promise.all(writes);
-
   console.log(
-    'common',
-    common,
-    '/',
-    chunkInfo.chunksByHash.size,
-    'percent size common',
-    commonSize / size,
+    `yjs content-defined-chunking of update stats:\n${common} of ${chunkInfo.chunksByHash.size} chunks reused.\n${commonSize}B of ${size}B reused.`,
   );
 }
 
