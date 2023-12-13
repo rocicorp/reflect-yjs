@@ -90,6 +90,9 @@ export class Provider {
         }
         if (isInitial) {
           isInitial = false;
+          // Only apply client update on initial load of document.
+          // All other client updates will have originated from this ydoc
+          // and thus not need to be applied.
           if (this.#clientUpdate) {
             Y.applyUpdateV2(ydoc, this.#clientUpdate);
           }
