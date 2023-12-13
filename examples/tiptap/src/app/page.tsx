@@ -1,9 +1,8 @@
-import { TextEditor } from "@/components/TextEditor";
+import { nanoid } from "nanoid";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <main>
-      <TextEditor />
-    </main>
-  );
+function Page() {
+  redirect("/r/" + nanoid(6));
 }
+
+export default Page;

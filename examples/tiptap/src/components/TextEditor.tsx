@@ -23,8 +23,8 @@ import { Provider, mutators as yjsMutators } from "@rocicorp/reflect-yjs";
 import { Reflect } from "@rocicorp/reflect/client";
 import { nanoid } from "nanoid";
 
-export function TextEditor() {
-  return <Editor />;
+export function TextEditor({ roomID }: { roomID: string }) {
+  return <Editor roomID={roomID} />;
 }
 
 const USER_INFO = [
@@ -86,7 +86,7 @@ if (!server) {
 }
 
 // Collaborative text editor with simple rich text and live cursors
-export function Editor() {
+export function Editor({ roomID }: { roomID: string }) {
   const [doc, setDoc] = useState<Y.Doc>();
   const [provider, setProvider] = useState<Provider>();
 
@@ -94,9 +94,6 @@ export function Editor() {
     console.log("creating new reflect instance");
 
     const userID = nanoid();
-    const roomID =
-      new URLSearchParams(location.search).get("roomID") ??
-      `r-${Math.floor(new Date().getTime() / (1000 * 60 * 60))}`;
 
     const reflect = new Reflect({
       server,
