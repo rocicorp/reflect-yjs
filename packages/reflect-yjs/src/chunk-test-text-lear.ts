@@ -1,3 +1,4 @@
+// ~154 KB
 export const TEST_TEXT_LEAR = `King Lear
 by William Shakespeare
 Edited by Barbara A. Mowat and Paul Werstine

@@ -116,11 +116,11 @@ async function setServerUpdate(
   }
   await Promise.all(writes);
   console.log(
-    `yjs content-defined-chunking of update stats:\n$  {common} of ${
+    `yjs content-defined-chunking of update stats:\n  ${common} of ${
       chunkInfo.chunksByHash.size
     } (${Math.floor(
       (common / chunkInfo.chunksByHash.size) * 100,
-    )}%) chunks reused.\n  ${commonSize} B of ${size} B (${Math.floor(
+    )}%) chunks reused.\n  ${commonSize} bytes of ${size} bytes (${Math.floor(
       (commonSize / size) * 100,
     )}%) reused.`,
   );
