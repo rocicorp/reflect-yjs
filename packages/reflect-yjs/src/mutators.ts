@@ -12,27 +12,48 @@ import {chunk, unchunk} from './chunk.js';
 export const mutators = {
   yjsSetLocalStateField,
   yjsSetLocalState,
-  updateYJS,
+  updateYJS: updateYJS(undefined),
 };
 
 export type Mutators = typeof mutators;
 
-export async function updateYJS(
-  tx: WriteTransaction,
-  {name, update}: {name: string; update: string},
-) {
-  if (tx.location === 'server') {
-    const existingServerUpdate = await getServerUpdate(name, tx);
-    if (!existingServerUpdate) {
-      await setServerUpdate(name, base64.toByteArray(update), tx);
-    } else {
-      const updates = [existingServerUpdate, base64.toByteArray(update)];
-      const merged = Y.mergeUpdatesV2(updates);
+export type UpdateYJSArgs = {
+  validator?: ((doc: Y.Doc) => void) | undefined;
+};
+
+export function updateYJS(args?: UpdateYJSArgs | undefined) {
+  return async function (
+    tx: WriteTransaction,
+    {name, update}: {name: string; update: string},
+  ) {
+    const {validator} = args ?? {};
+    if (tx.location === 'server') {
+      const existingServerUpdate = await getServerUpdate(name, tx);
+      const decodedUpdate = base64.toByteArray(update);
+      let merged = existingServerUpdate
+        ? Y.mergeUpdatesV2([existingServerUpdate, decodedUpdate])
+        : decodedUpdate;
+
+      if (validator) {
+        // If we have a validator, we need to materialize the doc.
+        // This is slow, but we'll add features to Reflect in the future to keep this doc
+        // loaded so we don't have to do it over and over. Currently we cannot because it is
+        // possible for multiple rooms to be loaded into the same JS context, so global
+        // variables don't work. We need some shared context that we can stash cross-mutator
+        // state like this on.
+        const doc = new Y.Doc();
+        Y.applyUpdateV2(doc, merged);
+        validator(doc);
+        merged = Y.encodeStateAsUpdateV2(doc);
+      }
       await setServerUpdate(name, merged, tx);
+    } else {
+      if (validator) {
+        throw new Error('validator only supported on server');
+      }
+      await setClientUpdate(name, update, tx);
     }
-  } else {
-    await setClientUpdate(name, update, tx);
-  }
+  };
 }
 
 export function yjsProviderKeyPrefix(name: string): string {

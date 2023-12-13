@@ -1,27 +1,24 @@
-import type {AuthHandler, ReflectServerOptions} from '@rocicorp/reflect/server';
-import {mutators as yjsMutators, Mutators} from '@rocicorp/reflect-yjs';
+import {mutators as yjsMutators, updateYJS} from '@rocicorp/reflect-yjs';
+// @ts-expect-error "no ts support"
+import {regex} from 'badwords-list';
 
-const authHandler: AuthHandler = (auth: string, _roomID: string) => {
-  if (auth) {
-    // A real implementation could:
-    // 1. if using session auth make a fetch call to a service to
-    //    look up the userID by `auth` in a session database.
-    // 2. if using stateless JSON Web Token auth, decrypt and validate the token
-    //    and return the sub field value for userID (i.e. subject field).
-    // It should also check that the user with userID is authorized
-    // to access the room with roomID.
-    return {
-      userID: auth,
-    };
-  }
-  return null;
-};
-
-function makeOptions(): ReflectServerOptions<Mutators> {
+function makeOptions() {
   return {
-    mutators: yjsMutators,
-    authHandler,
-    logLevel: 'debug',
+    mutators: {
+      ...yjsMutators,
+      updateYJS: updateYJS({
+        validator: doc => {
+          const text = doc.getText('monaco');
+          const string = text.toString();
+          let match: RegExpExecArray | null = null;
+          while ((match = regex.exec(string)) !== null) {
+            const badWordLength = match[0].length;
+            text.delete(match.index, badWordLength);
+            text.insert(match.index, '*'.repeat(badWordLength));
+          }
+        },
+      }),
+    },
   };
 }
 

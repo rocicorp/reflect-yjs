@@ -29,7 +29,7 @@ class FakeReflect {
     .fn()
     .mockReturnValue(() => undefined);
   mutate: {
-    updateYJS: MockedMutator<typeof updateYJS>;
+    updateYJS: MockedMutator<ReturnType<typeof updateYJS>>;
     yjsSetLocalStateField: MockedMutator<typeof yjsSetLocalStateField>;
     yjsSetLocalState: MockedMutator<typeof yjsSetLocalState>;
   } = {

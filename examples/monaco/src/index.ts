@@ -29,7 +29,6 @@ const reflect = new Reflect({
   server,
   userID,
   roomID,
-  auth: userID,
   mutators,
 });
 
