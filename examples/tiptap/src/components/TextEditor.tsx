@@ -93,7 +93,7 @@ export function Editor({ roomID }: { roomID: string }) {
   useEffect(() => {
     console.log("creating new reflect instance");
 
-    const userID = nanoid();
+    const userID = "anon";
 
     const reflect = new Reflect({
       server,
@@ -101,6 +101,7 @@ export function Editor({ roomID }: { roomID: string }) {
       roomID,
       auth: userID,
       mutators: yjsMutators,
+      kvStore: "idb",
     });
 
     const yDoc = new Y.Doc();

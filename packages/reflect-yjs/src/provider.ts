@@ -4,9 +4,11 @@ import * as Y from 'yjs';
 import {Awareness} from './awareness.js';
 import type {ChunkedUpdateMeta, Mutators} from './mutators.js';
 import {
-  yjsProviderClientUpdateKey,
-  yjsProviderKeyPrefix,
+  getClientUpdates,
+  getServerUpdateChunkEntries,
+  getServerUpdateMeta,
   yjsProviderServerUpdateChunkKeyPrefix,
+  yjsProviderServerUpdateKeyPrefix,
   yjsProviderServerUpdateMetaKey,
 } from './mutators.js';
 import {unchunk} from './chunk.js';
@@ -14,45 +16,72 @@ import {unchunk} from './chunk.js';
 export class Provider {
   readonly #reflect: Reflect<Mutators>;
   readonly #ydoc: Y.Doc;
+  #destroyed = false;
   #awareness: Awareness | null = null;
-  readonly #cancelWatch: () => void;
+  #cancelWatch: () => void = () => {};
 
   readonly name: string;
-  #clientUpdate: Uint8Array | null = null;
-  #serverUpdate: Uint8Array | null = null;
   #serverUpdateMeta: ChunkedUpdateMeta | null = null;
   #serverUpdateChunks: Map<string, Uint8Array> = new Map();
-  #vector: Uint8Array | null = null;
 
   constructor(reflect: Reflect<Mutators>, name: string, ydoc: Y.Doc) {
     this.#reflect = reflect;
     this.name = name;
     this.#ydoc = ydoc;
 
-    ydoc.on('update', this.#handleUpdate);
+    ydoc.on('updateV2', this.#handleUpdateV2);
     ydoc.on('destroy', this.#handleDestroy);
 
-    const clientUpdateKey = yjsProviderClientUpdateKey(name);
+    void this.#init();
+  }
+
+  async #init(): Promise<void> {
+    const {name} = this;
     const serverUpdateMetaKey = yjsProviderServerUpdateMetaKey(name);
     const serverUpdateChunkKeyPrefix =
       yjsProviderServerUpdateChunkKeyPrefix(name);
 
-    let isInitial = true;
-    this.#cancelWatch = reflect.experimentalWatch(
+    const {clientUpdates, serverUpdateMeta, serverUpdateChunkEntries} =
+      await this.#reflect.query(async tx => ({
+        clientUpdates: await getClientUpdates(name, tx),
+        serverUpdateMeta: await getServerUpdateMeta(name, tx),
+        serverUpdateChunkEntries: await getServerUpdateChunkEntries(name, tx),
+      }));
+    if (this.#destroyed) {
+      return;
+    }
+
+    this.#serverUpdateMeta = serverUpdateMeta ?? null;
+    this.#serverUpdateChunks = new Map(
+      serverUpdateChunkEntries.map(([hash, value]) => [
+        hash,
+        base64.toByteArray(value),
+      ]),
+    );
+    if (this.#serverUpdateMeta) {
+      Y.applyUpdateV2(
+        this.#ydoc,
+        unchunk(
+          this.#serverUpdateChunks,
+          this.#serverUpdateMeta.chunkHashes,
+          this.#serverUpdateMeta.length,
+        ),
+        this,
+      );
+    }
+    for (const clientUpdate of clientUpdates) {
+      Y.applyUpdateV2(this.#ydoc, base64.toByteArray(clientUpdate), this);
+    }
+
+    this.#cancelWatch = this.#reflect.experimentalWatch(
       diff => {
-        let serverUpdateChange = false;
         for (const diffOp of diff) {
           const {key} = diffOp;
           switch (diffOp.op) {
             case 'add':
             case 'change':
-              if (key === clientUpdateKey) {
-                this.#clientUpdate = base64.toByteArray(
-                  diffOp.newValue as string,
-                );
-              } else if (key === serverUpdateMetaKey) {
+              if (key === serverUpdateMetaKey) {
                 this.#serverUpdateMeta = diffOp.newValue as ChunkedUpdateMeta;
-                serverUpdateChange = true;
               } else if (key.startsWith(serverUpdateChunkKeyPrefix)) {
                 this.#serverUpdateChunks.set(
                   key.substring(serverUpdateChunkKeyPrefix.length),
@@ -61,11 +90,8 @@ export class Provider {
               }
               break;
             case 'del':
-              if (key === clientUpdateKey) {
-                this.#clientUpdate = null;
-              } else if (key === serverUpdateMetaKey) {
+              if (key === serverUpdateMetaKey) {
                 this.#serverUpdateMeta = null;
-                serverUpdateChange = true;
               } else if (key.startsWith(serverUpdateChunkKeyPrefix)) {
                 this.#serverUpdateChunks.delete(
                   key.substring(serverUpdateChunkKeyPrefix.length),
@@ -74,33 +100,20 @@ export class Provider {
               break;
           }
         }
-        if (serverUpdateChange) {
-          if (this.#serverUpdateMeta === null) {
-            this.#serverUpdate = null;
-            this.#vector = null;
-          } else {
-            this.#serverUpdate = unchunk(
+        if (this.#serverUpdateMeta !== null) {
+          Y.applyUpdateV2(
+            this.#ydoc,
+            unchunk(
               this.#serverUpdateChunks,
               this.#serverUpdateMeta.chunkHashes,
               this.#serverUpdateMeta.length,
-            );
-            this.#vector = Y.encodeStateVectorFromUpdateV2(this.#serverUpdate);
-            Y.applyUpdateV2(ydoc, this.#serverUpdate, this);
-          }
-        }
-        if (isInitial) {
-          isInitial = false;
-          // Only apply client update on initial load of document.
-          // All other client updates will have originated from this ydoc
-          // and thus not need to be applied.
-          if (this.#clientUpdate) {
-            Y.applyUpdateV2(ydoc, this.#clientUpdate, this);
-          }
+            ),
+            this,
+          );
         }
       },
       {
-        prefix: yjsProviderKeyPrefix(name),
-        initialValuesInFirstDiff: true,
+        prefix: yjsProviderServerUpdateKeyPrefix(name),
       },
     );
   }
@@ -112,16 +125,13 @@ export class Provider {
     return this.#awareness;
   }
 
-  #handleUpdate = async (_update: unknown, origin: unknown) => {
+  #handleUpdateV2 = async (update: Uint8Array, origin: unknown) => {
     if (origin === this) {
       return;
     }
-    const diffUpdate = this.#vector
-      ? Y.encodeStateAsUpdateV2(this.#ydoc, this.#vector)
-      : Y.encodeStateAsUpdateV2(this.#ydoc);
     await this.#reflect.mutate.updateYJS({
       name: this.name,
-      update: base64.fromByteArray(diffUpdate),
+      update: base64.fromByteArray(update),
     });
   };
 
@@ -130,13 +140,12 @@ export class Provider {
   };
 
   destroy(): void {
+    this.#destroyed = true;
     this.#cancelWatch();
-    this.#clientUpdate = null;
     this.#serverUpdateMeta = null;
     this.#serverUpdateChunks.clear();
-    this.#vector = null;
     this.#ydoc.off('destroy', this.#handleDestroy);
-    this.#ydoc.off('update', this.#handleUpdate);
+    this.#ydoc.off('updateV2', this.#handleUpdateV2);
     this.#awareness?.destroy();
   }
 }

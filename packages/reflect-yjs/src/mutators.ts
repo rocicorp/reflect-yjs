@@ -8,6 +8,7 @@ import type {
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {chunk, unchunk} from './chunk.js';
+import {uuidv4} from 'lib0/random.js';
 
 export const mutators = {
   yjsSetLocalStateField,
@@ -60,11 +61,15 @@ export function yjsProviderKeyPrefix(name: string): string {
   return `'yjs/provider/${name}/`;
 }
 
-export function yjsProviderClientUpdateKey(name: string): string {
-  return `${yjsProviderKeyPrefix(name)}client`;
+function yjsProviderClientUpdateKeyPrefix(name: string): string {
+  return `${yjsProviderKeyPrefix(name)}/client/`;
 }
 
-function yjsProviderServerUpdateKeyPrefix(name: string): string {
+function yjsProviderClientUpdateKey(name: string, id: string): string {
+  return `${yjsProviderClientUpdateKeyPrefix(name)}${id}`;
+}
+
+export function yjsProviderServerUpdateKeyPrefix(name: string): string {
   return `${yjsProviderKeyPrefix(name)}/server/`;
 }
 
@@ -84,7 +89,20 @@ export function yjsProviderServerChunkKey(
 }
 
 function setClientUpdate(name: string, update: string, tx: WriteTransaction) {
-  return tx.set(yjsProviderClientUpdateKey(name), update);
+  return tx.set(yjsProviderClientUpdateKey(name, uuidv4()), update);
+}
+
+export function getClientUpdates(
+  name: string,
+  tx: ReadTransaction,
+): Promise<string[]> {
+  const updatePrefix = yjsProviderClientUpdateKeyPrefix(name);
+  return tx
+    .scan({
+      prefix: updatePrefix,
+    })
+    .values()
+    .toArray() as Promise<string[]>;
 }
 
 const AVG_CHUNK_SIZE_B = 1024;
@@ -147,14 +165,6 @@ async function setServerUpdate(
   );
 }
 
-export async function getClientUpdate(
-  name: string,
-  tx: ReadTransaction,
-): Promise<string | undefined> {
-  const v = await tx.get(yjsProviderClientUpdateKey(name));
-  return typeof v === 'string' ? v : undefined;
-}
-
 export type ChunkedUpdateMeta = {
   chunkHashes: string[];
   length: number;
@@ -164,9 +174,7 @@ async function getServerUpdate(
   name: string,
   tx: ReadTransaction,
 ): Promise<Uint8Array | undefined> {
-  const updateMeta = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
-    | undefined
-    | ChunkedUpdateMeta;
+  const updateMeta = await getServerUpdateMeta(name, tx);
   if (updateMeta === undefined) {
     return undefined;
   }
@@ -185,14 +193,43 @@ async function getServerUpdate(
   return unchunk(chunksByHash, updateMeta.chunkHashes, updateMeta.length);
 }
 
+export async function getServerUpdateMeta(
+  name: string,
+  tx: ReadTransaction,
+): Promise<ChunkedUpdateMeta | undefined> {
+  const updateMeta = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
+    | undefined
+    | ChunkedUpdateMeta;
+  return updateMeta;
+}
+
+export async function getServerUpdateChunkEntries(
+  name: string,
+  tx: ReadTransaction,
+): Promise<[hash: string, value: string][]> {
+  const chunksPrefix = yjsProviderServerUpdateChunkKeyPrefix(name);
+  const chunks = await tx
+    .scan({
+      prefix: chunksPrefix,
+    })
+    .entries();
+  const chunksPrefixLength = chunksPrefix.length;
+  const entries: [hash: string, value: string][] = [];
+  for await (const [key, value] of chunks) {
+    const hash = key.substring(chunksPrefixLength, key.length);
+    entries.push([hash, value as string]);
+  }
+  return entries;
+}
+
 export function yjsAwarenessKey(
   name: string,
   reflectClientID: ClientID,
   yjsClientID: number,
 ): string {
-  // -/p/${reflectClientID} is a presence key space and these are ephemeral. They
+  // -c/${reflectClientID} is a client key space and these are ephemeral. They
   // get deleted when Reflect knows that the client can never come back.
-  return `-/p/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
+  return `-/c/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
 }
 
 export function parseKeyIntoClientIDs(
