@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import {expect, test, beforeEach, suite, afterEach} from 'vitest';
-import {Awareness} from './awareness.js';
-import {resolver} from '@rocicorp/resolver';
-
-import {Mutators, mutators} from './mutators.js';
-import * as Y from 'yjs';
-
 import {Reflect} from '@rocicorp/reflect/client';
+import {resolver} from '@rocicorp/resolver';
+import {afterEach, beforeEach, expect, suite, test} from 'vitest';
+import * as Y from 'yjs';
+import {Awareness} from './awareness.js';
+import {Mutators, mutators} from './mutators.js';
 
 let reflect: Reflect<Mutators>;
 
@@ -33,10 +30,10 @@ suite('Awareness', () => {
     doc2.clientID = 1;
     const aw2 = new Awareness(reflect, 'testName', doc2);
 
-    expect(aw1).to.be.an.instanceof(Awareness);
+    expect(aw1).toBeInstanceOf(Awareness);
 
     const initialState = aw1.getLocalState();
-    expect(initialState).to.deep.equal(null);
+    expect(initialState).toBeNull();
 
     const aw1changes: {
       added: number[];
@@ -71,10 +68,8 @@ suite('Awareness', () => {
       ]),
     );
 
-    expect(aw1changes).to.deep.equal(aw2changes);
-    expect(aw2changes).to.deep.equal([
-      {added: [0, 1], updated: [], removed: []},
-    ]);
+    expect(aw1changes).toEqual(aw2changes);
+    expect(aw2changes).toEqual([{added: [0, 1], updated: [], removed: []}]);
 
     aw1.setLocalState({x: 3});
 
@@ -87,8 +82,8 @@ suite('Awareness', () => {
       ]),
     );
 
-    expect(aw1changes).to.deep.equal(aw2changes);
-    expect(aw2changes).to.deep.equal([
+    expect(aw1changes).toEqual(aw2changes);
+    expect(aw2changes).toEqual([
       {added: [0, 1], updated: [], removed: []},
       {added: [], updated: [0], removed: []},
     ]);

@@ -190,21 +190,21 @@ export function yjsAwarenessKey(
   reflectClientID: ClientID,
   yjsClientID: number,
 ): string {
-  // -c/${reflectClientID} is a client key space and these are ephemeral. They
+  // -/p/${reflectClientID} is a presence key space and these are ephemeral. They
   // get deleted when Reflect knows that the client can never come back.
-  return `-/c/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
+  return `-/p/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
 }
 
-function parseKeyIntoClientIDs(
+export function parseKeyIntoClientIDs(
   key: string,
   name: string,
 ): undefined | [ClientID, string] {
-  // `-/c/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
+  // `-/p/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
   //  0/1/2                 /3  /4        /5      /6
   const parts = key.split('/');
   if (
     parts[0] !== '-' ||
-    parts[1] !== 'c' ||
+    parts[1] !== 'p' ||
     parts[3] !== 'yjs' ||
     parts[4] !== 'awareness' ||
     parts[5] !== name
@@ -292,7 +292,7 @@ export async function listClientStates(
   name: string,
 ): Promise<[ClientID, number, ReadonlyJSONObject][]> {
   const entries: [ClientID, number, ReadonlyJSONObject][] = [];
-  const prefix = '-/c/';
+  const prefix = '-/p/';
   for await (const [key, value] of tx.scan({prefix}).entries()) {
     const parts = parseKeyIntoClientIDs(key, name);
     if (parts) {
