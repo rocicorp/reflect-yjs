@@ -15,7 +15,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "./MenuBar";
-
+import Footer from "./Footer";
 export function TextEditor({ roomID }: { roomID: string }) {
   return <Editor roomID={roomID} />;
 }
@@ -154,15 +154,7 @@ function TiptapEditor({ doc, provider }: EditorProps) {
     <div className="editor">
       {editor && <MenuBar editor={editor} />}
       <EditorContent className="editor__content" editor={editor} />
-      <div className="editor__footer">
-        <div
-          className={`editor__status editor__status--${
-            name ? "connected" : "offline"
-          }`}
-        >
-          {name ? `${name} online` : "offline"}
-        </div>
-      </div>
+      <Footer provider={provider} currentUser={userInfo.userInfo} />
     </div>
   );
 }
