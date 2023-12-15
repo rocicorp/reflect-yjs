@@ -1,5 +1,3 @@
-@import "./normalize.css";
-
 html,
 body {
   background: var(--color-surface-elevated);
@@ -22,6 +20,14 @@ html.grabbing {
 
 html.grabbing * {
   user-select: none;
+}
+
+.ProseMirror {
+  height: 75vh;
+}
+
+:focus-visible {
+  outline: none;
 }
 
 /* Give a remote user a caret */

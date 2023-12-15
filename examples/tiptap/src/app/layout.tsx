@@ -1,5 +1,4 @@
 import "../styles/globals.css";
-import "../styles/text-editor.css";
 
 export const metadata = {
   title: "Reflect + Yjs + Tiptap",
