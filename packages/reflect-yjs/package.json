@@ -22,8 +22,10 @@
     "test": "vitest run --browser.provider=playwright --browser.name=chromium --browser.headless",
     "test:watch": "vitest watch --browser.provider=playwright --browser.name=chromium --browser.headless"
   },
+  "peerDependencies": {
+    "@rocicorp/reflect": ">=0.38.202312080119 <= 0.39.0"
+  },
   "dependencies": {
-    "@rocicorp/reflect": "^0.38.202311200859",
     "base64-js": "^1.5.1",
     "lib0": "~0.2.88",
     "y-protocols": "^1.0.6",

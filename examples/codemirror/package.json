@@ -18,7 +18,7 @@
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
     "@rocicorp/reflect-yjs": "0.0.1",
-    "@rocicorp/reflect": "^0.38.202311200859",
+    "@rocicorp/reflect": "^0.38.202312080119",
     "@types/react-dom": "^18.2.17",
     "@types/react": "^18.2.38",
     "@vitejs/plugin-react": "^4.2.0",
