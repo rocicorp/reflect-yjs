@@ -187,9 +187,9 @@ export function yjsAwarenessKey(
   reflectClientID: ClientID,
   yjsClientID: number,
 ): string {
-  // -c/${reflectClientID} is a client key space and these are ephemeral. They
+  // -p/${reflectClientID} is a client key space and these are ephemeral. They
   // get deleted when Reflect knows that the client can never come back.
-  return `-/c/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
+  return `-/p/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
 }
 
 export function parseKeyIntoClientIDs(
