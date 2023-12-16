@@ -187,7 +187,7 @@ export function yjsAwarenessKey(
   reflectClientID: ClientID,
   yjsClientID: number,
 ): string {
-  // -p/${reflectClientID} is a client key space and these are ephemeral. They
+  // -p/${reflectClientID} is a presence key space and these are ephemeral. They
   // get deleted when Reflect knows that the client can never come back.
   return `-/p/${reflectClientID}/yjs/awareness/${name}/${yjsClientID}`;
 }
