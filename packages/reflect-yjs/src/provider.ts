@@ -4,11 +4,9 @@ import * as Y from 'yjs';
 import {Awareness} from './awareness.js';
 import type {ChunkedUpdateMeta, Mutators} from './mutators.js';
 import {
-  getClientUpdates,
-  getServerUpdateChunkEntries,
-  getServerUpdateMeta,
+  yjsProviderKeyPrefix,
+  yjsProviderClientUpdateKeyPrefix,
   yjsProviderServerUpdateChunkKeyPrefix,
-  yjsProviderServerUpdateKeyPrefix,
   yjsProviderServerUpdateMetaKey,
 } from './mutators.js';
 import {unchunk} from './chunk.js';
@@ -16,9 +14,8 @@ import {unchunk} from './chunk.js';
 export class Provider {
   readonly #reflect: Reflect<Mutators>;
   readonly #ydoc: Y.Doc;
-  #destroyed = false;
   #awareness: Awareness | null = null;
-  #cancelWatch: () => void = () => {};
+  readonly #cancelWatch: () => void;
 
   readonly name: string;
   #serverUpdateMeta: ChunkedUpdateMeta | null = null;
@@ -32,56 +29,27 @@ export class Provider {
     ydoc.on('updateV2', this.#handleUpdateV2);
     ydoc.on('destroy', this.#handleDestroy);
 
-    void this.#init();
-  }
-
-  async #init(): Promise<void> {
-    const {name} = this;
+    const clientUpdateKeyPrefix = yjsProviderClientUpdateKeyPrefix(name);
     const serverUpdateMetaKey = yjsProviderServerUpdateMetaKey(name);
     const serverUpdateChunkKeyPrefix =
       yjsProviderServerUpdateChunkKeyPrefix(name);
 
-    const {clientUpdates, serverUpdateMeta, serverUpdateChunkEntries} =
-      await this.#reflect.query(async tx => ({
-        clientUpdates: await getClientUpdates(name, tx),
-        serverUpdateMeta: await getServerUpdateMeta(name, tx),
-        serverUpdateChunkEntries: await getServerUpdateChunkEntries(name, tx),
-      }));
-    if (this.#destroyed) {
-      return;
-    }
-
-    this.#serverUpdateMeta = serverUpdateMeta ?? null;
-    this.#serverUpdateChunks = new Map(
-      serverUpdateChunkEntries.map(([hash, value]) => [
-        hash,
-        base64.toByteArray(value),
-      ]),
-    );
-    if (this.#serverUpdateMeta) {
-      Y.applyUpdateV2(
-        this.#ydoc,
-        unchunk(
-          this.#serverUpdateChunks,
-          this.#serverUpdateMeta.chunkHashes,
-          this.#serverUpdateMeta.length,
-        ),
-        this,
-      );
-    }
-    for (const clientUpdate of clientUpdates) {
-      Y.applyUpdateV2(this.#ydoc, base64.toByteArray(clientUpdate), this);
-    }
-
-    this.#cancelWatch = this.#reflect.experimentalWatch(
+    this.#cancelWatch = reflect.experimentalWatch(
       diff => {
+        const newClientUpdates: Uint8Array[] = [];
+        let serverUpdateChange = false;
         for (const diffOp of diff) {
           const {key} = diffOp;
           switch (diffOp.op) {
             case 'add':
             case 'change':
-              if (key === serverUpdateMetaKey) {
+              if (key.startsWith(clientUpdateKeyPrefix)) {
+                newClientUpdates.push(
+                  base64.toByteArray(diffOp.newValue as string),
+                );
+              } else if (key === serverUpdateMetaKey) {
                 this.#serverUpdateMeta = diffOp.newValue as ChunkedUpdateMeta;
+                serverUpdateChange = true;
               } else if (key.startsWith(serverUpdateChunkKeyPrefix)) {
                 this.#serverUpdateChunks.set(
                   key.substring(serverUpdateChunkKeyPrefix.length),
@@ -92,6 +60,7 @@ export class Provider {
             case 'del':
               if (key === serverUpdateMetaKey) {
                 this.#serverUpdateMeta = null;
+                serverUpdateChange = true;
               } else if (key.startsWith(serverUpdateChunkKeyPrefix)) {
                 this.#serverUpdateChunks.delete(
                   key.substring(serverUpdateChunkKeyPrefix.length),
@@ -100,20 +69,21 @@ export class Provider {
               break;
           }
         }
-        if (this.#serverUpdateMeta !== null) {
-          Y.applyUpdateV2(
-            this.#ydoc,
-            unchunk(
-              this.#serverUpdateChunks,
-              this.#serverUpdateMeta.chunkHashes,
-              this.#serverUpdateMeta.length,
-            ),
-            this,
+        if (serverUpdateChange && this.#serverUpdateMeta !== null) {
+          const serverUpdate = unchunk(
+            this.#serverUpdateChunks,
+            this.#serverUpdateMeta.chunkHashes,
+            this.#serverUpdateMeta.length,
           );
+          Y.applyUpdateV2(ydoc, serverUpdate, this);
+        }
+        for (const clientUpdate of newClientUpdates) {
+          Y.applyUpdateV2(ydoc, clientUpdate, this);
         }
       },
       {
-        prefix: yjsProviderServerUpdateKeyPrefix(name),
+        prefix: yjsProviderKeyPrefix(name),
+        initialValuesInFirstDiff: true,
       },
     );
   }
@@ -125,13 +95,13 @@ export class Provider {
     return this.#awareness;
   }
 
-  #handleUpdateV2 = async (update: Uint8Array, origin: unknown) => {
+  #handleUpdateV2 = async (updateV2: Uint8Array, origin: unknown) => {
     if (origin === this) {
       return;
     }
     await this.#reflect.mutate.updateYJS({
       name: this.name,
-      update: base64.fromByteArray(update),
+      update: base64.fromByteArray(updateV2),
     });
   };
 
@@ -140,7 +110,6 @@ export class Provider {
   };
 
   destroy(): void {
-    this.#destroyed = true;
     this.#cancelWatch();
     this.#serverUpdateMeta = null;
     this.#serverUpdateChunks.clear();

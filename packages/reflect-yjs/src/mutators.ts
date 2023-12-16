@@ -61,7 +61,7 @@ export function yjsProviderKeyPrefix(name: string): string {
   return `'yjs/provider/${name}/`;
 }
 
-function yjsProviderClientUpdateKeyPrefix(name: string): string {
+export function yjsProviderClientUpdateKeyPrefix(name: string): string {
   return `${yjsProviderKeyPrefix(name)}/client/`;
 }
 
@@ -90,19 +90,6 @@ export function yjsProviderServerChunkKey(
 
 function setClientUpdate(name: string, update: string, tx: WriteTransaction) {
   return tx.set(yjsProviderClientUpdateKey(name, uuidv4()), update);
-}
-
-export function getClientUpdates(
-  name: string,
-  tx: ReadTransaction,
-): Promise<string[]> {
-  const updatePrefix = yjsProviderClientUpdateKeyPrefix(name);
-  return tx
-    .scan({
-      prefix: updatePrefix,
-    })
-    .values()
-    .toArray() as Promise<string[]>;
 }
 
 const AVG_CHUNK_SIZE_B = 1024;
@@ -174,7 +161,9 @@ async function getServerUpdate(
   name: string,
   tx: ReadTransaction,
 ): Promise<Uint8Array | undefined> {
-  const updateMeta = await getServerUpdateMeta(name, tx);
+  const updateMeta = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
+    | undefined
+    | ChunkedUpdateMeta;
   if (updateMeta === undefined) {
     return undefined;
   }
@@ -191,35 +180,6 @@ async function getServerUpdate(
     chunksByHash.set(hash, base64.toByteArray(value as string));
   }
   return unchunk(chunksByHash, updateMeta.chunkHashes, updateMeta.length);
-}
-
-export async function getServerUpdateMeta(
-  name: string,
-  tx: ReadTransaction,
-): Promise<ChunkedUpdateMeta | undefined> {
-  const updateMeta = (await tx.get(yjsProviderServerUpdateMetaKey(name))) as
-    | undefined
-    | ChunkedUpdateMeta;
-  return updateMeta;
-}
-
-export async function getServerUpdateChunkEntries(
-  name: string,
-  tx: ReadTransaction,
-): Promise<[hash: string, value: string][]> {
-  const chunksPrefix = yjsProviderServerUpdateChunkKeyPrefix(name);
-  const chunks = await tx
-    .scan({
-      prefix: chunksPrefix,
-    })
-    .entries();
-  const chunksPrefixLength = chunksPrefix.length;
-  const entries: [hash: string, value: string][] = [];
-  for await (const [key, value] of chunks) {
-    const hash = key.substring(chunksPrefixLength, key.length);
-    entries.push([hash, value as string]);
-  }
-  return entries;
 }
 
 export function yjsAwarenessKey(
