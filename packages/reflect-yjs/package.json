@@ -13,7 +13,7 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "node --no-warnings tool/build.js && tsc --emitDeclarationOnly",
+    "build": "node --no-warnings tool/build.js && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "format": "prettier --write *",
     "check-format": "prettier --check *",
     "check-types": "tsc --noEmit",
