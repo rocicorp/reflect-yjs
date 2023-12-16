@@ -10,6 +10,7 @@ import {
   yjsProviderServerUpdateMetaKey,
 } from './mutators.js';
 import {unchunk} from './chunk.js';
+import {uuidv4} from 'lib0/random.js';
 
 export class Provider {
   readonly #reflect: Reflect<Mutators>;
@@ -101,6 +102,7 @@ export class Provider {
     }
     await this.#reflect.mutate.updateYJS({
       name: this.name,
+      id: uuidv4(),
       update: base64.fromByteArray(updateV2),
     });
   };

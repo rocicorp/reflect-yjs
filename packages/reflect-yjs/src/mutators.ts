@@ -25,7 +25,7 @@ export type UpdateYJSArgs = {
 export function updateYJS(args?: UpdateYJSArgs | undefined) {
   return async function (
     tx: WriteTransaction,
-    {name, update}: {name: string; update: string},
+    {name, id, update}: {name: string; id: string; update: string},
   ) {
     const {validator} = args ?? {};
     if (tx.location === 'server') {
@@ -52,7 +52,7 @@ export function updateYJS(args?: UpdateYJSArgs | undefined) {
       if (validator) {
         throw new Error('validator only supported on server');
       }
-      await setClientUpdate(name, update, tx);
+      await setClientUpdate(name, id, update, tx);
     }
   };
 }
@@ -88,8 +88,13 @@ export function yjsProviderServerChunkKey(
   return `${yjsProviderServerUpdateChunkKeyPrefix(name)}${chunkHash}`;
 }
 
-function setClientUpdate(name: string, update: string, tx: WriteTransaction) {
-  return tx.set(yjsProviderClientUpdateKey(name, uuidv4()), update);
+function setClientUpdate(
+  name: string,
+  id: string,
+  update: string,
+  tx: WriteTransaction,
+) {
+  return tx.set(yjsProviderClientUpdateKey(name, id), update);
 }
 
 const AVG_CHUNK_SIZE_B = 1024;
