@@ -8,7 +8,6 @@ import type {
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {chunk, unchunk} from './chunk.js';
-import {uuidv4} from 'lib0/random.js';
 
 export const mutators = {
   yjsSetLocalStateField,
