@@ -7,7 +7,6 @@ import { Reflect } from "@rocicorp/reflect/client";
 import { nanoid } from "nanoid";
 import { EditorContent, useEditor } from "@tiptap/react";
 
-import CharacterCount from "@tiptap/extension-character-count";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Highlight from "@tiptap/extension-highlight";
@@ -134,9 +133,6 @@ function TiptapEditor({ doc, provider }: EditorProps) {
       Highlight,
       TaskList,
       TaskItem,
-      CharacterCount.configure({
-        limit: 10000,
-      }),
       Collaboration.configure({
         document: doc,
       }),
