@@ -23,7 +23,7 @@
     "test:watch": "vitest watch --browser.provider=playwright --browser.name=chromium --browser.headless"
   },
   "peerDependencies": {
-    "@rocicorp/reflect": ">=0.38.202312080119 <= 0.39.0"
+    "@rocicorp/reflect": ">=0.38.202312080119 <=0.39.0"
   },
   "dependencies": {
     "base64-js": "^1.5.1",
