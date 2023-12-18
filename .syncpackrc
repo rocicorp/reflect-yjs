@@ -1,0 +1,10 @@
+{  
+  "versionGroups": [
+    {
+      "packages": ["@rocicorp/reflect-yjs"],
+      "dependencyTypes": ["peer"],
+      "dependencies": ["@rocicorp/reflect"],
+      "isIgnored": true
+    }
+  ]
+}   
