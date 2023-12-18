@@ -109,6 +109,7 @@ export async function chunk(
   minimum: number,
   maximum: number,
   source: Uint8Array,
+  hashFn: (chunk: Uint8Array) => Promise<string>,
 ): Promise<{
   chunksByHash: Map<string, Uint8Array>;
   sourceAsChunkHashes: string[];
@@ -159,10 +160,7 @@ export async function chunk(
     }
 
     const chunk = source.slice(sourceOffset, sourceOffset + chunkSize);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', chunk);
-    const hash = Array.from(new Uint8Array(hashBuffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
+    const hash = await hashFn(chunk);
     if (!chunksByHash.has(hash)) {
       chunksByHash.set(hash, chunk);
     }

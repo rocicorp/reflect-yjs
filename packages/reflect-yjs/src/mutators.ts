@@ -8,6 +8,12 @@ import type {
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {chunk, unchunk} from './chunk.js';
+import {
+  AVG_CHUNK_SIZE_B,
+  MAX_CHUNK_SIZE_B,
+  MIN_CHUNK_SIZE_B,
+  hashFn,
+} from './chunk-config.js';
 
 export const mutators = {
   yjsSetLocalStateField,
@@ -96,9 +102,6 @@ function setClientUpdate(
   return tx.set(yjsProviderClientUpdateKey(name, id), update);
 }
 
-const AVG_CHUNK_SIZE_B = 1024;
-const MIN_CHUNK_SIZE_B = 256;
-const MAX_CHUNK_SIZE_B = 2048;
 async function setServerUpdate(
   name: string,
   update: Uint8Array,
@@ -116,6 +119,7 @@ async function setServerUpdate(
     MIN_CHUNK_SIZE_B,
     MAX_CHUNK_SIZE_B,
     update,
+    hashFn,
   );
   const updateMeta: ChunkedUpdateMeta = {
     chunkHashes: chunkInfo.sourceAsChunkHashes,

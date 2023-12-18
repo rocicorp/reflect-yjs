@@ -2,6 +2,7 @@ import {expect, suite, test} from 'vitest';
 import {chunk, unchunk} from './chunk.js';
 import {TEST_TEXT_LEAR} from './chunk-test-text-lear.js';
 import {TEST_TEXT_MOBY_DICK} from './chunk-test-text-moby-dick.js';
+import {hashFn} from './chunk-config.js';
 
 suite('chunk', () => {
   test('chunk is pure', async () => {
@@ -9,12 +10,24 @@ suite('chunk', () => {
     const {
       chunksByHash: chunksByHash1,
       sourceAsChunkHashes: sourceAsChunkHashes1,
-    } = await chunk(Math.pow(2, 10), Math.pow(2, 9), Math.pow(2, 11), source);
+    } = await chunk(
+      Math.pow(2, 10),
+      Math.pow(2, 9),
+      Math.pow(2, 11),
+      source,
+      hashFn,
+    );
 
     const {
       chunksByHash: chunksByHash2,
       sourceAsChunkHashes: sourceAsChunkHashes2,
-    } = await chunk(Math.pow(2, 10), Math.pow(2, 9), Math.pow(2, 11), source);
+    } = await chunk(
+      Math.pow(2, 10),
+      Math.pow(2, 9),
+      Math.pow(2, 11),
+      source,
+      hashFn,
+    );
 
     expect(chunksByHash1).toEqual(chunksByHash2);
     expect(sourceAsChunkHashes1).toEqual(sourceAsChunkHashes2);
@@ -33,6 +46,7 @@ suite('chunk', () => {
         min,
         max,
         source,
+        hashFn,
       );
 
       let totalExcludingLast = 0;
