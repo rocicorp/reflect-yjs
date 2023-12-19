@@ -2,7 +2,7 @@ import type {
   AuthHandler,
   ReflectServerOptions,
 } from "@rocicorp/reflect/server";
-import { mutators as yjsMutators, Mutators } from "@rocicorp/reflect-yjs";
+import { mutators as yjsMutators, Mutators } from "reflect-yjs";
 import { WriteTransaction } from "@rocicorp/reflect";
 
 const authHandler: AuthHandler = (auth: string, _roomID: string) => {

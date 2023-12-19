@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Provider } from "@rocicorp/reflect-yjs";
+import { Provider } from "reflect-yjs";
 import { UserInfo } from "./TextEditor";
 
 export function Footer({

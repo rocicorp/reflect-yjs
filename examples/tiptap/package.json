@@ -18,8 +18,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@rocicorp/reflect": "^0.38.202312080119",
-    "@rocicorp/reflect-yjs": "0.0.1",
+    "@rocicorp/reflect": ">=0.38.202312080119 <=0.39.0",
     "@tiptap/core": "^2.0.4",
     "@tiptap/extension-collaboration": "^2.0.4",
     "@tiptap/extension-collaboration-cursor": "^2.0.4",
@@ -35,8 +34,8 @@
     "lexical": "^0.11.1",
     "nanoid": "^5.0.3",
     "next": "^13.5.4",
-    "typescript": "^5.3.2",
-    "yjs": "^13.6.10"
+    "reflect-yjs": "0.0.1",
+    "typescript": "^5.3.2"
   },
   "dependencies": {
     "@tiptap/extension-code-block-lowlight": "^2.1.13",

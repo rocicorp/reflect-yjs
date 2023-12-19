@@ -1,4 +1,4 @@
-import {mutators as yjsMutators, updateYJS} from '@rocicorp/reflect-yjs';
+import {mutators as yjsMutators, updateYJS} from 'reflect-yjs';
 // @ts-expect-error "no ts support"
 import {regex} from 'badwords-list';
 

@@ -2,7 +2,7 @@
 import "./TextEditor.css";
 import React, { useState, useEffect } from "react";
 import * as Y from "yjs";
-import { Provider, mutators as yjsMutators } from "@rocicorp/reflect-yjs";
+import { Provider, mutators as yjsMutators } from "reflect-yjs";
 import { Reflect } from "@rocicorp/reflect/client";
 import { nanoid } from "nanoid";
 import { EditorContent, useEditor } from "@tiptap/react";
