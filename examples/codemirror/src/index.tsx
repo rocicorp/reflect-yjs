@@ -3,7 +3,7 @@ import 'codemirror/lib/codemirror.css';
 import {nanoid} from 'nanoid';
 import React, {useEffect, useRef} from 'react';
 import {UnControlled as CodeMirror} from 'react-codemirror2';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {CodemirrorBinding} from 'y-codemirror';
 import * as Y from 'yjs';
 import './index.css';
@@ -71,10 +71,11 @@ const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('root element is null');
 }
+const root = createRoot(rootElement);
 
 const userInfo = randUserInfo();
 
-render(
+root.render(
   <React.StrictMode>
     <div className={styles.container}>
       <h1>Reflect + yjs</h1>
@@ -86,7 +87,6 @@ render(
       <ReflectCodeMirror userInfo={userInfo} name="two" reflect={reflect} />
     </div>
   </React.StrictMode>,
-  rootElement,
 );
 
 if (import.meta.hot) {

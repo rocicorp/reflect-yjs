@@ -29,7 +29,8 @@
     "reflect-yjs": "0.0.2",
     "typescript": "^5.3.2",
     "vite": "^5.0.2",
-    "y-codemirror": "^3.0.1"
+    "y-codemirror": "^3.0.1",
+    "yjs": "^13.6.10"
   },
   "eslintConfig": {
     "extends": "@rocicorp/eslint-config"
