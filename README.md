@@ -1,6 +1,6 @@
-# `@rocicorp/reflect-yjs`
+# `reflect-yjs`
 
-This library enables storing and syncing Yjs documents via [Reflect](https://reflect.net/).
+This library enables collaborative text editing in [Reflect](https://reflect.net/) via [Yjs](https://yjs.dev/).
 
 Live demo at https://type.reflect.net/.
 
@@ -8,18 +8,13 @@ Live demo at https://type.reflect.net/.
 
 - **Awareness**: A robust implementation of Yjs "awareness" is included. Awareness is correctly cleaned up in all cases including tab-close, tab/browser-crash, navigation, tab-switch, offline, etc.
 - **Multiple Documents**: A single Reflect room can host any number of Yjs documents efficiently.
-- **Chunking** (soon): Large Yjs documents are automatically broken down into smaller pieces for efficient incremental updates.
+- **Chunking**: Large Yjs documents are automatically broken down into smaller pieces for efficient incremental updates.
+- **Validation**: Easily run custom validation on the server-side to filter profanity, enforce max length, or any other constraint you need.
 - **Editor Integration Examples**: Contains practical examples for `codemirror-yjs`, `monaco-yjs`, `tiptap-yjs`.
 
 ## Getting Started
 
-### Installation
-
-To install `@rocicorp/reflect-yjs`, run the following command:
-
-```bash
-npm install @rocicorp/reflect-yjs@latest
-```
+See https://hello.reflect.net/how/text
 
 ### Running an Example
 

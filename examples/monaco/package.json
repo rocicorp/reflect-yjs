@@ -16,8 +16,7 @@
   "devDependencies": {
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
-    "@rocicorp/reflect": "^0.38.202312080119",
-    "@rocicorp/reflect-yjs": "0.0.1",
+    "@rocicorp/reflect": ">=0.38.202312080119 <=0.39.0",
     "@types/react": "^18.2.38",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.0",
@@ -27,6 +26,7 @@
     "nanoid": "^5.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "reflect-yjs": "0.0.1",
     "typescript": "^5.3.2",
     "vite": "^5.0.2",
     "y-monaco": "^0.1.5"

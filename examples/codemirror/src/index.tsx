@@ -8,11 +8,7 @@ import {CodemirrorBinding} from 'y-codemirror';
 import * as Y from 'yjs';
 import './index.css';
 import styles from './index.module.css';
-import {
-  Provider,
-  mutators,
-  mutators as yjsMutators,
-} from '@rocicorp/reflect-yjs';
+import {Provider, mutators, mutators as yjsMutators} from 'reflect-yjs';
 import {UserInfo, randUserInfo} from './user-info.js';
 
 const userID = nanoid();

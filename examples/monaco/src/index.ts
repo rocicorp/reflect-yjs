@@ -1,4 +1,4 @@
-import {Provider, mutators as yjsMutators} from '@rocicorp/reflect-yjs';
+import {Provider, mutators as yjsMutators} from 'reflect-yjs';
 import {Reflect} from '@rocicorp/reflect/client';
 import * as monaco from 'monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
