@@ -2,7 +2,7 @@ import type {Reflect} from '@rocicorp/reflect/client';
 import * as base64 from 'base64-js';
 import * as Y from 'yjs';
 import {Awareness} from './awareness.js';
-import type {ChunkedUpdateMeta, Mutators} from './mutators.js';
+import type {ServerUpdateMeta, Mutators} from './mutators.js';
 import {
   yjsProviderKeyPrefix,
   yjsProviderClientUpdateKeyPrefix,
@@ -19,7 +19,7 @@ export class Provider {
   readonly #cancelWatch: () => void;
 
   readonly name: string;
-  #serverUpdateMeta: ChunkedUpdateMeta | null = null;
+  #serverUpdateMeta: ServerUpdateMeta | null = null;
   #serverUpdateChunks: Map<string, Uint8Array> = new Map();
 
   constructor(reflect: Reflect<Mutators>, name: string, ydoc: Y.Doc) {
@@ -49,7 +49,7 @@ export class Provider {
                   base64.toByteArray(diffOp.newValue as string),
                 );
               } else if (key === serverUpdateMetaKey) {
-                this.#serverUpdateMeta = diffOp.newValue as ChunkedUpdateMeta;
+                this.#serverUpdateMeta = diffOp.newValue as ServerUpdateMeta;
                 serverUpdateChange = true;
               } else if (key.startsWith(serverUpdateChunkKeyPrefix)) {
                 this.#serverUpdateChunks.set(
