@@ -84,8 +84,6 @@ export function Editor({ roomID }: { roomID: string }) {
   const [provider, setProvider] = useState<Provider>();
 
   useEffect(() => {
-    console.log("creating new reflect instance");
-
     const userID = nanoid();
 
     const reflect = new Reflect({
@@ -100,7 +98,6 @@ export function Editor({ roomID }: { roomID: string }) {
     const yProvider = new Provider(reflect, "one", yDoc);
     setDoc(yDoc);
     setProvider(yProvider);
-    console.log("userInfo", userInfo);
     yProvider.awareness.setLocalStateField("user", userInfo.userInfo);
     return () => {
       yDoc?.destroy();
