@@ -126,6 +126,7 @@ function TiptapEditor({ doc, provider }: EditorProps) {
 
   // Set up editor with plugins, and place user info into Yjs awareness and cursors
   const editor = useEditor({
+    autofocus: "start",
     extensions: [
       StarterKit.configure({
         history: false,
