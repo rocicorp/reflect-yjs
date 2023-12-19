@@ -27,7 +27,7 @@ export type UpdateYJSArgs = {
   validator?: ((doc: Y.Doc) => void) | undefined;
 };
 
-const GC_FREQUENCY = 200;
+const GC_FREQUENCY = 1_000;
 
 export function updateYJS(args?: UpdateYJSArgs | undefined) {
   return async function (
