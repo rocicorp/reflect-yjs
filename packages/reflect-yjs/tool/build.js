@@ -1,11 +1,11 @@
 import * as esbuild from 'esbuild';
 import packageJSON from '../package.json' assert {type: 'json'};
 
-const {dependencies, devDependencies} = packageJSON;
+const {devDependencies, peerDependencies} = packageJSON;
 const external = new Set(
   Object.keys({
-    ...dependencies,
     ...devDependencies,
+    ...peerDependencies,
   }),
 );
 
