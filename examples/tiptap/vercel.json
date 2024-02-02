@@ -1,0 +1,4 @@
+{
+  "buildCommand": "turbo run build --force && node publish-reflect.js && turbo run build --force",
+  "installCommand": "npm install"
+}
