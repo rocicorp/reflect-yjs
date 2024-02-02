@@ -12,3 +12,4 @@ dist
 next-env.d.ts
 .reflect/
 **/*.tgz
+.DS_Store

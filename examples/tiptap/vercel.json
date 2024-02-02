@@ -1,0 +1,3 @@
+{
+  "buildCommand": "turbo run build --force && node publish-reflect.js"
+}
