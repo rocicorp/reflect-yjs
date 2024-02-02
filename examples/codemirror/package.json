@@ -17,7 +17,7 @@
     "@codemirror/lang-javascript": "^6.2.1",
     "@rocicorp/eslint-config": "^0.5.1",
     "@rocicorp/prettier-config": "^0.2.0",
-    "@rocicorp/reflect": ">=0.38.202312080119 <=0.39.0",
+    "@rocicorp/reflect": "0.39.202402020122",
     "@types/react-dom": "^18.2.17",
     "@types/react": "^18.2.38",
     "@vitejs/plugin-react": "^4.2.0",
