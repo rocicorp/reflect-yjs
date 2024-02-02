@@ -1,5 +1,6 @@
 const { spawn } = require("child_process");
 const fs = require("fs");
+var path = require("path");
 
 const appBaseName = "reflect-type";
 const refName = getEnv(
@@ -29,7 +30,10 @@ async function publish() {
   );
   const url = lines[success + 1];
 
-  fs.writeFileSync("./.env", `NEXT_PUBLIC_REFLECT_SERVER=${url}`);
+  fs.writeFileSync("./.env", `NEXT_PUBLIC_REFLECT_URL=${url}`);
+
+  console.log("wrote env file at: ", path.resolve("./.env"));
+  console.log(fs.readFileSync("./.env").toString());
 }
 
 function runCommand(command, args) {
