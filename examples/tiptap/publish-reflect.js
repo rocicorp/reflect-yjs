@@ -16,21 +16,20 @@ const appName = `${appBaseName}-${refName}`
 publish();
 
 async function publish() {
-  const output = await runCommand("npx", [
-    "reflect",
-    "publish",
-    "--server-path=./src/reflect/index.ts",
-    "--reflect-channel=canary",
-    `--app=${appName}`,
-    "--auth-key-from-env=REFLECT_AUTH_KEY",
-  ]);
-  const lines = output.toString().split("\n");
-  const success = lines.findIndex((line) =>
-    line.includes("🎁 Published successfully to:")
+  const output = JSON.parse(
+    await runCommand("npx", [
+      "reflect",
+      "publish",
+      "--server-path=./src/reflect/index.ts",
+      "--reflect-channel=canary",
+      `--app=${appName}`,
+      "--auth-key-from-env=REFLECT_AUTH_KEY",
+      "--output=json",
+    ])
   );
-  const url = lines[success + 1];
-
-  fs.writeFileSync("./.env", `NEXT_PUBLIC_REFLECT_URL=${url}`);
+  if (output.success) {
+    fs.writeFileSync("./.env", `NEXT_PUBLIC_REFLECT_URL=${output.url}`);
+  }
 
   console.log("wrote env file at: ", path.resolve("./.env"));
   console.log(fs.readFileSync("./.env").toString());
